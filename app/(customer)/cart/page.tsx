@@ -91,8 +91,7 @@ const CartPage = () => {
 
   const handleCheckoutClick = async () => {
     if (selectedIds.length === 0) return;
-    router.push('/test');
-    // router.push('/checkout');
+    router.push('/checkout');
   };
 
   // Mencegah Hydration Mismatch & Loading State
