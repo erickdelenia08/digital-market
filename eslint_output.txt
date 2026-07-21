@@ -1,0 +1,209 @@
+
+E:\Coding\Next js\digital-market\.agents\skills\crud-mastery\resources\action-template.ts
+  23:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  38:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\Coding\Next js\digital-market\app\(customer)\cart\page.tsx
+   14:10  warning  'Cart' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+   21:40  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+   48:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\Coding\Next js\digital-market\app\(customer)\cart\page.tsx:48:7
+  46 |     const saved = sessionStorage.getItem('selected_cart_ids');
+  47 |     if (saved) {
+> 48 |       setSelectedIds(JSON.parse(saved));
+     |       ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  49 |     } else {
+  50 |       if (isHybrid && dbCart.length > 0) {
+  51 |         setSelectedIds(dbCart.map(c => c.id));  react-hooks/set-state-in-effect
+   67:20  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+   71:35  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  133:37  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  164:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @next/next/no-img-element
+  217:30  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 react/no-unescaped-entities
+
+E:\Coding\Next js\digital-market\app\(customer)\checkout\page.tsx
+    5:10  warning  'Button' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+   10:8   warning  'Link' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+   18:40  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
+   28:9   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\Coding\Next js\digital-market\app\(customer)\checkout\page.tsx:28:9
+  26 |     if (saved) {
+  27 |       try {
+> 28 |         setSelectedIds(JSON.parse(saved));
+     |         ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  29 |       } catch (e) {
+  30 |         console.error("Gagal load dari storage", e);
+  31 |       }    react-hooks/set-state-in-effect
+   39:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\Coding\Next js\digital-market\app\(customer)\checkout\page.tsx:39:7
+  37 |   useEffect(() => {
+  38 |     if (userId) {
+> 39 |       setIsLoadingDb(true);
+     |       ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  40 |       getCart(userId).then(res => {
+  41 |         setDbCart(res);
+  42 |         setIsLoadingDb(false);  react-hooks/set-state-in-effect
+   61:63  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
+   66:9   warning  'dummyOrderId' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+  125:43  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
+  133:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @next/next/no-img-element
+
+E:\Coding\Next js\digital-market\app\(customer)\orders\[orderId]\success\page.tsx
+   6:10  warning  'Separator' is defined but never used                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+  48:19  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+E:\Coding\Next js\digital-market\app\(customer)\products\[slug]\page.tsx
+   38:42  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   39:44  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  163:40  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  280:79  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  283:55  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  398:23  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  398:40  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+E:\Coding\Next js\digital-market\app\actions\digital-asset-actions.ts
+  41:19  error  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  54:9   error  'fileUrl' is never reassigned. Use 'const' instead  prefer-const
+  72:19  error  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  98:19  error  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+
+E:\Coding\Next js\digital-market\app\actions\media-actions.ts
+  26:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  52:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  63:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\Coding\Next js\digital-market\app\actions\orders.ts
+  22:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  43:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\Coding\Next js\digital-market\app\actions\user-actions.ts
+  35:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  54:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  72:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  96:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\Coding\Next js\digital-market\app\api\checkout\route.ts
+  114:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\Coding\Next js\digital-market\app\dashboard\orders\orders-client.tsx
+  14:10  warning  'isPending' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+E:\Coding\Next js\digital-market\app\layout.tsx
+  41:11  error  Synchronous scripts should not be used. See: https://nextjs.org/docs/messages/no-sync-scripts  @next/next/no-sync-scripts
+
+E:\Coding\Next js\digital-market\components\checkout-button.tsx
+  3:10  warning  'useState' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\Coding\Next js\digital-market\components\columns\product-columns.tsx
+  121:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\Coding\Next js\digital-market\components\columns\product-columns.tsx:121:5
+  119 |   // useEffect hanya berjalan di browser setelah hidrasi selesai
+  120 |   useEffect(() => {
+> 121 |     setIsClient(true);
+      |     ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  122 |   }, []);
+  123 |
+  124 |   const formatted = new Intl.NumberFormat("id-ID", {  react-hooks/set-state-in-effect
+
+E:\Coding\Next js\digital-market\components\data-table.tsx
+  139:17  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+E:\Coding\Next js\digital-market\components\data-table.tsx:139:17
+  137 |   )
+  138 |
+> 139 |   const table = useReactTable({
+      |                 ^^^^^^^^^^^^^ TanStack Table's `useReactTable()` API returns functions that cannot be memoized safely
+  140 |     data,
+  141 |     columns,
+  142 |     state: {  react-hooks/incompatible-library
+
+E:\Coding\Next js\digital-market\components\forms\digital-asset-manager.tsx
+  68:21  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+E:\Coding\Next js\digital-market\components\forms\digital-asset-manager.tsx:68:21
+  66 |   });
+  67 |
+> 68 |   const assetType = form.watch("type");
+     |                     ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  69 |
+  70 |   const onSubmit = async (data: DigitalAssetInput) => {
+  71 |     setIsSubmitting(true);  react-hooks/incompatible-library
+
+E:\Coding\Next js\digital-market\components\forms\product-form.tsx
+    7:10  warning  'z' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+   93:26  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+E:\Coding\Next js\digital-market\components\forms\product-form.tsx:93:26
+  91 |   // Auto-slug for Product Name
+  92 |   useEffect(() => {
+> 93 |     const subscription = form.watch((value, { name }) => {
+     |                          ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  94 |       if (name === "name" && value.name) {
+  95 |         const generatedSlug = value.name
+  96 |           .toLowerCase()  react-hooks/incompatible-library
+  325:23  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @next/next/no-img-element
+
+E:\Coding\Next js\digital-market\components\forms\product-media-uploader.tsx
+  129:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+E:\Coding\Next js\digital-market\components\forms\user-form.tsx
+  7:10  warning  'z' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\Coding\Next js\digital-market\components\home\featured-products.tsx
+  37:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\Coding\Next js\digital-market\components\navbar.tsx
+  65:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\Coding\Next js\digital-market\components\product\product-listing-page.tsx
+   34:9   warning  'brands' is assigned a value but never used                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+   35:10  warning  'selectedBrands' is assigned a value but never used                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+  345:27  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+E:\Coding\Next js\digital-market\scripts\stubs\article-crud\tests\articles.test.ts
+  29:10  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\Coding\Next js\digital-market\tests\products.test.ts
+  25:95   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  43:133  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  52:79   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  72:105  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  84:101  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 64 problems (42 errors, 22 warnings)
+  1 error and 0 warnings potentially fixable with the `--fix` option.
+
