@@ -4,14 +4,17 @@ import React, { useState, useEffect } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Trash2, ShoppingCart, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Trash2, ShoppingCart, ArrowRight, ShieldCheck, Loader2 } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { getCart, removeFromCartDB } from '@/app/actions/cart';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Cart } from '@prisma/client';
+import { motion, AnimatePresence } from 'motion/react';
+// import { Cart } from '@prisma/client';
+import { createOrderFromCart } from '@/app/actions/checkout';
+import { toast } from 'sonner';
+import Image from 'next/image';
 
 const CartPage = () => {
   const router = useRouter();
@@ -19,13 +22,9 @@ const CartPage = () => {
   const userId = session?.user?.id;
   const { cart: localCart, removeFromCart: removeLocal, _hasHydrated } = useCartStore();
   const [dbCart, setDbCart] = useState<any[]>([]);
-  const [selectedIds, setSelectedIds] = useState<string[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = sessionStorage.getItem('selected_cart_ids');
-      return saved ? JSON.parse(saved) : [];
-    }
-    return [];
-  });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isLoadingDb, setIsLoadingDb] = useState(false);
 
   // Fetch dari DB jika user login
@@ -42,26 +41,26 @@ const CartPage = () => {
   const isHybrid = !!userId;
   const cartData = isHybrid ? dbCart : localCart;
 
-  useEffect(() => {
-    const saved = sessionStorage.getItem('selected_cart_ids');
-    if (saved) {
-      setSelectedIds(JSON.parse(saved));
-    } else {
-      if (isHybrid && dbCart.length > 0) {
-        setSelectedIds(dbCart.map(c => c.id));
-      } else if (!isHybrid && _hasHydrated && localCart.length > 0) {
-        setSelectedIds(localCart.map(c => c.id));
-      }
-    }
-  }, [_hasHydrated, isHybrid, dbCart, localCart]);
+  // useEffect(() => {
+  //   const saved = sessionStorage.getItem('selected_cart_ids');
+  //   if (saved) {
+  //     setSelectedIds(JSON.parse(saved));
+  //   } else {
+  //     if (isHybrid && dbCart.length > 0) {
+  //       setSelectedIds(dbCart.map(c => c.id));
+  //     } else if (!isHybrid && _hasHydrated && localCart.length > 0) {
+  //       setSelectedIds(localCart.map(c => c.id));
+  //     }
+  //   }
+  // }, [_hasHydrated, isHybrid, dbCart, localCart]);
 
-  useEffect(() => {
-    if (selectedIds.length > 0) {
-      sessionStorage.setItem('selected_cart_ids', JSON.stringify(selectedIds));
-    } else {
-      sessionStorage.removeItem('selected_cart_ids');
-    }
-  }, [selectedIds]);
+  // useEffect(() => {
+  //   if (selectedIds.length > 0) {
+  //     sessionStorage.setItem('selected_cart_ids', JSON.stringify(selectedIds));
+  //   } else {
+  //     sessionStorage.removeItem('selected_cart_ids');
+  //   }
+  // }, [selectedIds]);
 
   const subtotal = cartData
     .filter((item: any) => {
@@ -91,7 +90,21 @@ const CartPage = () => {
 
   const handleCheckoutClick = async () => {
     if (selectedIds.length === 0) return;
-    router.push('/checkout');
+
+    try {
+      setIsLoading(true);
+
+      const result = await createOrderFromCart(selectedIds);
+
+      if (result.error) {
+        toast.error(result.error);
+        return;
+      }
+
+      router.push(`/checkout/${result.orderId}`);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Mencegah Hydration Mismatch & Loading State
@@ -161,11 +174,19 @@ const CartPage = () => {
 
                       {/* Premium Image Canvas */}
                       <div className="relative w-20 h-20 sm:w-24 sm:h-24 shrink-0 bg-slate-100 rounded-xl overflow-hidden border border-slate-100 shadow-inner group">
-                        <img
+                        <Image
+                          src={imageUrl}
+                          alt={product.name}
+                          fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          className="object-cover transition-transform duration-350 group-hover:scale-105"
+                        />
+                        {/* <img
                           src={imageUrl}
                           alt={product.name}
                           className="object-cover w-full h-full transition-transform duration-350 group-hover:scale-105"
-                        />
+                        /> */}
+
                       </div>
 
                       {/* Product Content Details */}
@@ -214,10 +235,10 @@ const CartPage = () => {
                   </div>
                   <h3 className="text-lg font-bold text-primary-900 mb-1.5">Your cart is empty</h3>
                   <p className="text-sm text-slate-500 mb-6 max-w-sm mx-auto leading-relaxed">
-                    You haven't added any premium digital products yet. Explore our curated collections to get started.
+                    You haven&apos;t added any premium digital products yet. Explore our curated collections to get started.
                   </p>
                   <Link href="/products">
-                    <Button className="px-6 h-11 text-sm font-semibold rounded-xl bg-white text-primary-900 border border-slate-200 shadow-sm hover:shadow hover:border-slate-300 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200">
+                    <Button className="px-6 h-11 text-sm font-semibold rounded-xl bg-white text-primary-900 border border-slate-200 shadow-sm hover:shadow hover:border-slate-600 hover:text-white hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200">
                       Browse Digital Store
                     </Button>
                   </Link>
@@ -262,11 +283,11 @@ const CartPage = () => {
                 <div className="mt-2 space-y-3">
                   <Button
                     size="lg"
-                    disabled={subtotal === 0 || selectedIds.length === 0}
+                    disabled={isLoading || subtotal === 0 || selectedIds.length === 0}
                     onClick={handleCheckoutClick}
                     className="w-full text-sm font-bold h-12 rounded-xl bg-primary-900 hover:bg-primary-950 text-white shadow-lg shadow-primary-900/15 border border-primary-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none group"
                   >
-                    <span>Proceed to Checkout</span>
+                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span>Proceed to Checkout</span>}
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
                   </Button>
 

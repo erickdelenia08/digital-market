@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { OrderStatus } from "@prisma/client";
+import { OrderStatus, PaymentStatus } from "@prisma/client";
 
 /**
  * POST /api/webhooks/xendit
- * Menerima callback status transaksi otomatis dari Xendit (Invoice & Payment Requests API V2/V3).
+ * Menerima callback status transaksi otomatis dari Xendit
  */
 export async function POST(req: Request) {
     try {
         const callbackToken = process.env.XENDIT_CALLBACK_TOKEN;
         const incomingToken = req.headers.get("x-callback-token");
 
-        // Pengamanan Token: Pastikan request benar-benar datang dari server resmi Xendit
+        // 1. Pengamanan Token Callback
         if (callbackToken && incomingToken !== callbackToken) {
             console.warn("Request tidak dikenal. Token callback tidak sesuai.");
             return new NextResponse("Unauthorized", { status: 401 });
@@ -20,55 +20,74 @@ export async function POST(req: Request) {
         const payload = await req.json();
         console.log("Xendit Webhook Payload diterima:", JSON.stringify(payload, null, 2));
 
-        // Format Payment Request V2/V3 bisa membungkus data dalam object 'data'
         const dataObj = payload.data || payload;
 
-        // Ekstraksi ID Referensi (Order ID) dari berbagai kemungkinan field Xendit
+        // 2. Ekstraksi ID Referensi (Order ID)
         const referenceId =
             dataObj.reference_id ||
             payload.reference_id ||
             dataObj.external_id ||
-            payload.external_id ||
-            dataObj.id ||
-            payload.id;
+            payload.external_id;
 
-        // Ekstraksi Status Pembayaran
-        const rawStatus = (dataObj.status || payload.status || payload.event || "").toUpperCase();
-        console.log(`Webhook Xendit untuk ID ${referenceId} - Status: ${rawStatus}`);
+
+        // const referenceId = payload.data.reference_id;   // e.g. "d9966e69...-1784795145757"
+        const paymentId = payload.data.payment_id || payload.data.payment_request_id
 
         if (!referenceId) {
-            console.warn("Kolom reference_id/external_id tidak ditemukan. Mengabaikan event ini (mungkin test webhook).");
+            console.log('tidak ditemukan reference id', referenceId);
+
+            console.warn("Kolom reference_id/external_id tidak ditemukan. Mengabaikan event ini.");
             return NextResponse.json({ success: true, message: "Ignored: No reference_id" });
         }
 
-        // Cari pesanan di database berdasarkan Order ID (atau xenditInvoiceId)
-        let order = await prisma.order.findUnique({
-            where: { id: referenceId },
-            include: { items: true },
+        const payment = await prisma.payment.findFirst({
+            where: {
+                OR: [
+                    { xenditReferenceId: referenceId },
+                    { xenditPaymentId: paymentId },
+                ],
+            },
+            include: {
+                order: {
+                    include: { items: true },
+                },
+            },
         });
 
-        if (!order) {
-            // Fallback cari via xenditInvoiceId
-            order = await prisma.order.findFirst({
-                where: { xenditInvoiceId: referenceId },
-                include: { items: true },
-            });
+        if (!payment || !payment.order) {
+            console.error(`Pesanan dengan Reference ID ${referenceId} tidak ditemukan.`);
+            return;
         }
 
+        const order = payment.order;
+        const latestPayment = payment;
+
+
+        // // 3. Cari Order dan Payment Terkait di Database
+        // const order = await prisma.order.findUnique({
+        //     where: { id: referenceId },
+        //     include: {
+        //         items: true,
+        //         payments: {
+        //             orderBy: { createdAt: "desc" },
+        //             take: 1,
+        //         },
+        //     },
+        // });
+
+        console.log('order yang ditemukan', order);
+
+
         if (!order) {
-            console.warn(`Pesanan dengan ID ${referenceId} tidak ditemukan. Mengabaikan event ini (mungkin test webhook).`);
+            console.log('tidaakkk ditemukan order');
+
+            console.warn(`Pesanan dengan ID ${referenceId} tidak ditemukan.`);
             return NextResponse.json({ success: true, message: "Ignored: Order not found" });
         }
 
-        const paymentMethod =
-            dataObj.payment_method?.type ||
-            dataObj.channel_code ||
-            payload.payment_method ||
-            payload.payment_channel ||
-            order.paymentMethod ||
-            "UNKNOWN";
 
-        // Daftar status sukses dari Xendit
+        const rawStatus = (dataObj.status || payload.status || payload.event || "").toUpperCase();
+        // 4. Kategori Status dari Xendit
         const isSuccess = [
             "PAID",
             "SETTLED",
@@ -78,29 +97,44 @@ export async function POST(req: Request) {
             "PAYMENT_REQUEST.SUCCEEDED",
         ].includes(rawStatus);
 
-        // Daftar status gagal / kedaluwarsa dari Xendit
-        const isExpiredOrFailed = [
+        const isExpired = [
             "EXPIRED",
-            "FAILED",
-            "CANCELLED",
-            "PAYMENT_REQUEST.FAILED",
             "PAYMENT_REQUEST.EXPIRED",
         ].includes(rawStatus);
 
+        const isFailed = [
+            "FAILED",
+            "CANCELLED",
+            "PAYMENT_REQUEST.FAILED",
+        ].includes(rawStatus);
+
+        // const latestPayment = order.payments[0];
+
+        // 5. Eksekusi Pembayaran SUKSES
+        console.log('INI rawStatus', rawStatus);
+
         if (isSuccess) {
-            if (order.status === OrderStatus.PENDING) {
+            console.log('pembayaran suksesss');
+            if (order.status !== OrderStatus.COMPLETED) {
+                console.log('INI order.status', order.status);
+                console.log('otwwww update ke completed');
+
                 await prisma.$transaction(async (tx) => {
-                    // 1. Update status pesanan ke COMPLETED
+                    // A. Update Status Order -> COMPLETED
                     await tx.order.update({
                         where: { id: order.id },
-                        data: {
-                            status: OrderStatus.COMPLETED,
-                            paymentMethod: String(paymentMethod),
-                            paymentLog: payload,
-                        },
+                        data: { status: OrderStatus.COMPLETED },
                     });
 
-                    // 2. Tambahkan produk ke UserLibrary untuk akses otomatis
+                    // B. Update Status Payment -> PAID
+                    if (latestPayment) {
+                        await tx.payment.update({
+                            where: { id: latestPayment.id },
+                            data: { status: PaymentStatus.PAID },
+                        });
+                    }
+
+                    // C. Masukkan Produk ke UserLibrary (Akses Pembeli)
                     for (const item of order.items) {
                         await tx.userLibrary.upsert({
                             where: {
@@ -121,18 +155,31 @@ export async function POST(req: Request) {
                     }
                 });
 
-                console.log(`Pesanan #${order.id} sukses terbayar. Status diubah ke COMPLETED & UserLibrary di-update.`);
+                console.log(`[SUCCESS] Pesanan #${order.id} terbayar. Status diubah ke COMPLETED & UserLibrary di-update.`);
             }
-        } else if (isExpiredOrFailed) {
+        }
+        // 6. Eksekusi Pembayaran EXPIRED atau FAILED
+        else if (isExpired || isFailed) {
             if (order.status === OrderStatus.PENDING) {
-                await prisma.order.update({
-                    where: { id: order.id },
-                    data: {
-                        status: OrderStatus.CANCELLED,
-                        paymentLog: payload,
-                    },
+                await prisma.$transaction(async (tx) => {
+                    // A. Update Status Order -> CANCELLED
+                    await tx.order.update({
+                        where: { id: order.id },
+                        data: { status: OrderStatus.CANCELLED },
+                    });
+
+                    // B. Update Status Payment -> EXPIRED / FAILED
+                    if (latestPayment) {
+                        await tx.payment.update({
+                            where: { id: latestPayment.id },
+                            data: {
+                                status: isExpired ? PaymentStatus.EXPIRED : PaymentStatus.FAILED,
+                            },
+                        });
+                    }
                 });
-                console.log(`Tagihan pesanan #${order.id} kedaluwarsa/gagal. Status diubah ke CANCELLED.`);
+
+                console.log(`[CANCELLED] Pesanan #${order.id} dibatalkan karena payment ${rawStatus}.`);
             }
         }
 

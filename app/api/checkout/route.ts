@@ -1,123 +1,118 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { auth } from '@/lib/auth';
-import { prisma } from '@/lib/db';
-import { createXenditPaymentRequest } from '@/lib/xendit';
 
 export async function POST(request: NextRequest) {
     try {
-        const session = await auth();
-        if (!session?.user?.id) {
-            return NextResponse.json({ message: 'Akses ditolak. Silakan login terlebih dahulu.' }, { status: 401 });
+        const { amount, method } = await request.json();
+        const secretKey = process.env.XENDIT_SECRET_KEY;
+
+        if (!secretKey) {
+            return NextResponse.json({ message: 'Secret Key Xendit belum dipasang di .env.local' }, { status: 500 });
         }
 
-        const userId = session.user.id;
-        const body = await request.json();
-        const { method, amount, selectedIds } = body;
+        // Memastikan amount adalah number
+        const cleanAmount = Number(amount);
+        const referenceId = `tokodigital-${Date.now()}`;
+        const basicAuth = Buffer.from(`${secretKey}:`).toString('base64');
 
-        if (!method) {
-            return NextResponse.json({ message: 'Metode pembayaran wajib dipilih.' }, { status: 400 });
+        const headers = {
+            'Authorization': `Basic ${basicAuth}`,
+            'Content-Type': 'application/json',
+        };
+
+        // 1. JIKA USER MEMILIH QRIS
+        if (method === 'qris') {
+            const resXendit = await fetch('https://api.xendit.co/qr_codes', {
+                method: 'POST',
+                headers: {
+                    ...headers,
+                    'api-version': '2022-07-31' // QRIS butuh api-version ini
+                },
+                body: JSON.stringify({
+                    reference_id: referenceId,
+                    type: 'DYNAMIC',
+                    amount: cleanAmount,
+                    currency: 'IDR',
+                }),
+            });
+
+            const data = await resXendit.json();
+            console.log(data);
+
+            if (!resXendit.ok) throw new Error(data.message || 'Gagal generate QRIS');
+
+            // Mengembalikan qr_string untuk di-render jadi QR Code di frontend (pakai lib qrcode.react)
+            return NextResponse.json({
+                reference_id: referenceId,
+                qr_string: data.qr_string
+            });
         }
 
-        // 1. Ambil data keranjang pengguna dari DB
-        const cart = await prisma.cart.findUnique({
-            where: { userId },
-            include: {
-                items: {
-                    include: {
-                        product: true,
+        // 2. JIKA USER MEMILIH GOPAY (E-Wallet v2)
+        if (method === 'gopay') {
+            const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+            const resXendit = await fetch('https://api.xendit.co/ewallets/charges', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    reference_id: referenceId,
+                    currency: 'IDR',
+                    amount: cleanAmount,
+                    checkout_method: 'ONE_TIME_PAYMENT',
+                    channel_code: 'GOPAY',
+                    channel_properties: {
+                        success_redirect_url: `${siteUrl}/checkout/success`,
+                        failure_redirect_url: `${siteUrl}/cart?status=failed`,
+                        cancel_redirect_url: `${siteUrl}/cart`,
                     },
-                },
-            },
-        });
-
-        if (!cart || cart.items.length === 0) {
-            return NextResponse.json({ message: 'Keranjang belanja Anda kosong.' }, { status: 400 });
-        }
-
-        // Filter items berdasarkan selectedIds jika dikirimkan oleh frontend
-        const targetItems = (Array.isArray(selectedIds) && selectedIds.length > 0)
-            ? cart.items.filter((item) => selectedIds.includes(item.productId))
-            : cart.items;
-
-        if (targetItems.length === 0) {
-            return NextResponse.json({ message: 'Tidak ada produk yang dipilih untuk di-checkout.' }, { status: 400 });
-        }
-
-        let calculatedTotal = 0;
-        const orderItemsData: { productId: string; price: number }[] = [];
-        const deleteItemIds: string[] = [];
-
-        for (const item of targetItems) {
-            if (!item.product.isPublished) {
-                return NextResponse.json({ message: `Produk "${item.product.name}" sudah tidak tersedia.` }, { status: 400 });
-            }
-
-            const price = item.product.price;
-            calculatedTotal += price;
-
-            orderItemsData.push({
-                productId: item.productId,
-                price: price,
+                }),
             });
 
-            deleteItemIds.push(item.id);
+            const data = await resXendit.json();
+            console.log(data);
+
+            if (!resXendit.ok) throw new Error(data.message || 'Gagal generate GoPay');
+
+            const actions = data.actions || {};
+            const deeplink = actions.mobile_deeplink_checkout_url || actions.mobile_web_checkout_url || actions.desktop_web_checkout_url || '';
+
+            return NextResponse.json({
+                reference_id: referenceId,
+                deeplink_url: deeplink
+            });
         }
 
-        const finalAmount = amount ? Number(amount) : calculatedTotal;
-
-        // 2. Buat Draf Order & Hapus Item dari Cart via Transaction
-        const newOrder = await prisma.$transaction(async (tx) => {
-            const order = await tx.order.create({
-                data: {
-                    userId,
-                    totalAmount: finalAmount,
-                    status: 'PENDING',
-                    paymentMethod: method,
-                    items: {
-                        create: orderItemsData,
-                    },
-                },
+        // 3. JIKA USER MEMILIH BCA VIRTUAL ACCOUNT (Menggunakan API V2 terbaru)
+        if (method === 'bca') {
+            const resXendit = await fetch('https://api.xendit.co/callback_virtual_accounts', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    external_id: referenceId,
+                    bank_code: 'BCA',
+                    name: 'DIGITAL STORE CUSTOMER',
+                    currency: 'IDR',
+                    is_closed: true,
+                    expected_amount: cleanAmount,
+                }),
             });
 
-            // Hapus item dari cart yang sudah masuk ke order
-            await tx.cartItem.deleteMany({
-                where: {
-                    id: { in: deleteItemIds },
-                },
+            const data = await resXendit.json();
+            console.log(data);
+
+            if (!resXendit.ok) throw new Error(data.message || 'Gagal generate BCA VA');
+
+            return NextResponse.json({
+                reference_id: referenceId,
+                account_number: data.account_number,
+                expiration_date: data.expiration_date
             });
+        }
 
-            return order;
-        });
 
-        // 3. Request ke Xendit Payment Request V2
-        const paymentRes = await createXenditPaymentRequest({
-            referenceId: newOrder.id,
-            amount: finalAmount,
-            method: method,
-            customerName: session.user.name || 'Digital Store Customer',
-            customerEmail: session.user.email || 'customer@example.com',
-            description: `Pembayaran Akses Produk Digital #${newOrder.id.substring(0, 8).toUpperCase()}`,
-        });
-
-        // 4. Update Order dengan Xendit Payment Request ID
-        await prisma.order.update({
-            where: { id: newOrder.id },
-            data: {
-                xenditInvoiceId: paymentRes.id,
-            },
-        });
-
-        return NextResponse.json({
-            order_id: newOrder.id,
-            qr_string: paymentRes.qr_string,
-            deeplink_url: paymentRes.deeplink_url,
-            account_number: paymentRes.account_number,
-            status: newOrder.status,
-            reference_id: paymentRes.reference_id,
-        });
+        return NextResponse.json({ message: 'Metode pembayaran tidak didukung' }, { status: 400 });
 
     } catch (error: any) {
-        console.error('Checkout API Error:', error);
-        return NextResponse.json({ message: error.message || 'Gagal memproses checkout Xendit.' }, { status: 500 });
+        console.error('Xendit Error:', error);
+        return NextResponse.json({ message: error.message || 'Internal Server Error' }, { status: 500 });
     }
 }

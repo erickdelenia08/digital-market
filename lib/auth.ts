@@ -44,7 +44,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         where: { id: user.id },
       });
 
-      console.log('ini exsisteing user ', existingUser);
+      // console.log('ini exsisteing user ', existingUser);
 
 
       // Prevent sign in without 2FA confirmation if enabled
@@ -80,7 +80,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.role = token.role as string;
       }
 
-      console.log('session', session);
+      // console.log('session', session);
       return session;
     },
     async jwt({ token, trigger, session }) {

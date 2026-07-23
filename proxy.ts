@@ -44,7 +44,7 @@ export default auth((req) => {
   // console.log('tessssssssss');
   // console.log('req ', req.auth);
 
-  console.log(userRole);
+  // console.log(userRole);
 
   // 2. Cek tipe rute
   const isAuthRoute = authRoutes.some((route) => nextUrl.pathname.startsWith(route));

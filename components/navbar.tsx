@@ -214,8 +214,14 @@ const Navbar = () => {
                       </li>
 
                       <li>
-                        <Link href="/library" className="flex w-full hover:bg-slate-50 hover:text-primary-900 py-2 px-4 rounded-lg transition-colors">
+                        <Link href="/orders" className="flex w-full hover:bg-slate-50 hover:text-primary-900 py-2 px-4 rounded-lg transition-colors">
                           Pesanan Saya
+                        </Link>
+                      </li>
+
+                      <li>
+                        <Link href="/library" className="flex w-full hover:bg-slate-50 hover:text-primary-900 py-2 px-4 rounded-lg transition-colors">
+                          Library Saya
                         </Link>
                       </li>
 

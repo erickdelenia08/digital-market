@@ -1,10 +1,11 @@
-import CustomCheckout from "./custom-checkout"
+// import CustomCheckout from "./custom-checkout"
 
 const TestPage = () => {
 
     return (
         <div>
-            <CustomCheckout />
+            {/* <CustomCheckout /> */}
+            checkout test
         </div>
     )
 }

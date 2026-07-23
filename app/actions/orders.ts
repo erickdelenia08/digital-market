@@ -5,6 +5,55 @@ import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { OrderStatus } from "@prisma/client";
 
+export async function getCheckoutOrder(
+  orderId: string
+) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return {
+      error: "Unauthorized",
+    };
+  }
+
+  const order = await prisma.order.findFirst({
+    where: {
+      id: orderId,
+      userId: session.user.id,
+    },
+    include: {
+      items: {
+        include: {
+          product: {
+            select: {
+              name: true,
+              slug: true,
+              price: true,
+              coverImage: true,
+            },
+          },
+        },
+      },
+      payments: {
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 1,
+      },
+    },
+  });
+
+  if (!order) {
+    return {
+      error: "Order tidak ditemukan.",
+    };
+  }
+
+  return {
+    order
+  };
+}
+
 export async function deleteOrder(id: string) {
   try {
     const session = await auth();
