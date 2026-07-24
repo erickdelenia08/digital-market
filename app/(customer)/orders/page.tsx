@@ -174,7 +174,7 @@ export default async function OrdersPage() {
 
                       {/* Conditional Action Buttons */}
                       <div className="flex items-center gap-3">
-                        {(order.status === 'COMPLETED' || order.status === 'PAID') && (
+                        {(order.status === 'COMPLETED') && (
                           <>
                             <Link
                               href="/library"

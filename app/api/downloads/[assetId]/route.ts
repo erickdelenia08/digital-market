@@ -7,8 +7,10 @@ import path from 'path';
 
 export async function GET(
     request: Request,
-    { params }: { params: { assetId: string } }
+    { params }: { params: Promise<{ assetId: string }> }
 ) {
+    const { assetId } = await params;
+
     // 1. Dapatkan User yang sedang Login
     const session = await auth()
     if (!session?.user?.id) {
@@ -19,7 +21,7 @@ export async function GET(
 
     // 2. Cari Asset Digital berdasarkan assetId
     const asset = await prisma.digitalAsset.findUnique({
-        where: { id: params.assetId },
+        where: { id: assetId },
         include: { product: true },
     });
 

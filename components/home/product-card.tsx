@@ -68,8 +68,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
         <p className="text-sm text-slate-500 mt-1">{product.category.name}</p>
 
         {/* Rating */}
-        <div className="flex items-center gap-1.5 mt-2">
-          <div className="flex items-center gap-0.5">
+        {product.reviewCount > 0 ? (
+          <div className="flex items-center gap-1.5 mt-2">
             {[...Array(5)].map((_, i) => (
               <Star
                 key={i}
@@ -79,14 +79,16 @@ const ProductCard = ({ product }: ProductCardProps) => {
                   }`}
               />
             ))}
+            <span className="text-sm text-slate-600">{product.averageRating} ({product.reviewCount})</span>
           </div>
-          <span className="text-sm text-slate-600">{product.averageRating} ({product.reviewCount})</span>
-        </div>
+        ) : (
+          <span className="text-sm text-slate-500 italic mt-1">belum ada ulasan</span>
+        )}
 
         {/* Price and Cart Button */}
         <div className="flex items-center justify-between mt-4">
           <div>
-            <span className="text-2xl font-bold text-primary-900">${product.price}</span>
+            <span className="text-xl font-bold text-primary-900"> Rp {product.price.toLocaleString('id-ID')}</span>
           </div>
           <Link
             href={`/products/${product.slug}`}

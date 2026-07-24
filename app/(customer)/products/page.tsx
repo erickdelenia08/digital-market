@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import ProductListingPage from '@/components/product/product-listing-page'
 import { prisma } from '@/lib/db'
 
@@ -12,7 +12,9 @@ const ProductPage = async () => {
 
   return (
     <div>
-      <ProductListingPage initialProducts={products} initialCategories={categories} />
+      <Suspense fallback={<div>Loading...</div>}>
+        <ProductListingPage initialProducts={products} initialCategories={categories} />
+      </Suspense>
     </div>
   )
 }
