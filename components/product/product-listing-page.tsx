@@ -365,16 +365,32 @@ const ProductListingPage = ({ initialProducts, initialCategories }: ProductListi
                             </h3>
 
                             {/* Rating */}
-                            <div className="flex items-center gap-1.5 mt-2">
-                              <div className="flex items-center gap-0.5">
-                                {[...Array(5)].map((_, i) => (
-                                  <Star
-                                    key={i}
-                                    className={`w-3.5 h-3.5 ${i < Math.floor(product.averageRating) ? 'text-amber-400 fill-amber-400' : 'text-slate-200'}`}
-                                  />
-                                ))}
-                              </div>
-                              <span className="text-xs font-medium text-slate-500">({product.reviewCount})</span>
+                            <div className="mt-2 h-5 flex items-center">
+                              {product.reviewCount > 0 ? (
+                                <div className="flex items-center gap-1.5">
+                                  <div className="flex items-center gap-0.5">
+                                    {[...Array(5)].map((_, i) => (
+                                      <Star
+                                        key={i}
+                                        className={`w-3.5 h-3.5 ${i < Math.floor(product.averageRating)
+                                          ? 'text-amber-400 fill-amber-400'
+                                          : 'text-slate-200'
+                                          }`}
+                                      />
+                                    ))}
+                                  </div>
+                                  <span className="text-xs font-semibold text-slate-700">
+                                    {product.averageRating.toFixed(1)}
+                                  </span>
+                                  <span className="text-xs font-medium text-slate-400">
+                                    ({product.reviewCount})
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-xs font-medium text-slate-400 italic">
+                                  Belum ada ulasan
+                                </span>
+                              )}
                             </div>
                           </div>
 

@@ -10,6 +10,13 @@ const FeaturedProducts = async () => {
       isPublished: true,
       isFeatured: true
     },
+    include: {
+      category: {
+        select: {
+          name: true
+        }
+      }
+    },
     orderBy: {
       createdAt: 'desc'
     },
@@ -53,7 +60,7 @@ const FeaturedProducts = async () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-            {featuredProducts.map((product: any) => (
+            {featuredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>

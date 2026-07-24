@@ -1,20 +1,21 @@
-// src/store/useCartStore.ts
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { MockProduct } from "@/mock-data/product";
+import { getProductBySlug } from "@/app/actions/product";
+
+// 1. Ekstrak tipe Product asli dari Prisma
+export type Product = NonNullable<Awaited<ReturnType<typeof getProductBySlug>>>;
 
 interface CartState {
-    cart: MockProduct[];
+    cart: Product[];
     totalAmount: number;
 
     // Actions
-    addToCart: (product: MockProduct) => void;
+    addToCart: (product: Product) => void;
     removeFromCart: (productId: string) => void;
     clearCart: () => void;
     _hasHydrated: boolean;
     setHasHydrated: (state: boolean) => void;
 }
-
 export const useCartStore = create<CartState>()(
     persist(
         (set) => ({

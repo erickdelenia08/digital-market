@@ -2,12 +2,24 @@
 
 import { Star, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { MockProduct } from '@/mock-data/product';
 import { motion } from 'motion/react'; // 2. Import Framer Motion
 import Image from 'next/image';
+import { Prisma } from '@prisma/client';
 
+// 1. Definisikan tipe payload dari Prisma sesuai query parent
+type ProductWithCategoryName = Prisma.ProductGetPayload<{
+  include: {
+    category: {
+      select: {
+        name: true;
+      };
+    };
+  };
+}>;
+
+// 2. Gunakan tipe tersebut di Props komponen child
 interface ProductCardProps {
-  product: MockProduct;
+  product: ProductWithCategoryName;
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
@@ -23,7 +35,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       className="group bg-white rounded-2xl overflow-hidden border border-slate-100 hover:border-slate-200 hover:shadow-xl hover:shadow-slate-100/50 transition-[border-color,box-shadow] duration-300 cursor-pointer"
     >
       {/* Product Image */}
-      <Link href={`/products/${product.id}`}>
+      <Link href={`/products/${product.slug}`}>
         <div className="aspect-4/3 bg-linear-to-br from-indigo-500 to-purple-600 relative overflow-hidden">
           <Image
             src={product.coverImage!}
@@ -46,14 +58,14 @@ const ProductCard = ({ product }: ProductCardProps) => {
       {/* Product Info */}
       <div className="p-5">
         {/* Name */}
-        <Link href={`/products/${product.id}`}>
+        <Link href={`/products/${product.slug}`}>
           <h3 className="mt-2 text-lg font-semibold text-primary-900 group-hover:text-accent-indigo transition-colors duration-200 line-clamp-1">
             {product.name}
           </h3>
         </Link>
 
         {/* Category */}
-        <p className="text-sm text-slate-500 mt-1">{product.categoryId}</p>
+        <p className="text-sm text-slate-500 mt-1">{product.category.name}</p>
 
         {/* Rating */}
         <div className="flex items-center gap-1.5 mt-2">
@@ -77,7 +89,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
             <span className="text-2xl font-bold text-primary-900">${product.price}</span>
           </div>
           <Link
-            href={`/products/${product.id}`}
+            href={`/products/${product.slug}`}
             className="flex items-center gap-2 px-4 py-2.5 bg-primary-900 hover:bg-accent-indigo text-white text-sm font-medium rounded-xl transition-colors duration-200 shadow-xs"
           >
             <span>Detail</span>
