@@ -20,7 +20,7 @@ import { createPayment } from '@/app/actions/payment/create-payment';
 import { formatCountdown, formatTimeLeft } from '@/helper/payment-timer';
 import { checkOrderStatus } from '@/app/actions/payment';
 import { getCheckoutOrder } from "@/app/actions/orders";
-import { cancelPendingPayment } from '@/app/actions/payment/cancel-payment';
+import { cancelPayment } from '@/app/actions/payment/cancel-payment';
 
 
 type CheckoutResponse = Awaited<ReturnType<typeof getCheckoutOrder>>;
@@ -178,14 +178,25 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
     }, [step, paymentData?.orderId, isExpired]);
 
     const handleCancelAndChangeMethod = async () => {
+        // 💡 Gunakan paymentData, fallback ke latestPayment
+        const currentPaymentId = paymentData?.id || latestPayment?.id;
+
+        console.log("ini payment ID yang mau dibatalkan:", currentPaymentId);
+
+        if (!currentPaymentId) {
+            toast.error("Tidak ada pembayaran aktif yang bisa dibatalkan.");
+            return;
+        }
+
         setCancelling(true);
 
         try {
-            // 1. Batalkan transaksi pending di DB
-            const res = await cancelPendingPayment(order.id);
+            // 1. Batalkan transaksi menggunakan ID yang aktif saat ini
+            const res = await cancelPayment(currentPaymentId);
+            console.log("ini cancel res", res);
 
             if (res.error) {
-                alert(res.error);
+                toast.error(res.error);
                 return;
             }
 
@@ -196,8 +207,10 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
 
             // 3. Kembalikan ke Step 1
             setStep(1);
+            toast.success("Pembayaran berhasil dibatalkan, silakan pilih metode lain.");
         } catch (err) {
             console.error(err);
+            toast.error("Gagal membatalkan pembayaran.");
         } finally {
             setCancelling(false);
         }

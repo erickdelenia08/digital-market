@@ -159,7 +159,7 @@ export async function POST(req: Request) {
             }
         }
         // 6. Eksekusi Pembayaran EXPIRED atau FAILED
-        else if (isExpired || isFailed) {
+        else if (isExpired) {
             if (order.status === OrderStatus.PENDING) {
                 await prisma.$transaction(async (tx) => {
                     // A. Update Status Order -> CANCELLED
@@ -173,7 +173,30 @@ export async function POST(req: Request) {
                         await tx.payment.update({
                             where: { id: latestPayment.id },
                             data: {
-                                status: isExpired ? PaymentStatus.EXPIRED : PaymentStatus.FAILED,
+                                status: PaymentStatus.EXPIRED,
+                            },
+                        });
+                    }
+                });
+
+                console.log(`[CANCELLED] Pesanan #${order.id} dibatalkan karena payment ${rawStatus}.`);
+            }
+        }
+        else if (isFailed) {
+            if (order.status === OrderStatus.PENDING) {
+                await prisma.$transaction(async (tx) => {
+                    // A. Update Status Order -> CANCELLED
+                    await tx.order.update({
+                        where: { id: order.id },
+                        data: { status: OrderStatus.CANCELLED },
+                    });
+
+                    // B. Update Status Payment -> EXPIRED / FAILED
+                    if (latestPayment) {
+                        await tx.payment.update({
+                            where: { id: latestPayment.id },
+                            data: {
+                                status: PaymentStatus.CANCELLED,
                             },
                         });
                     }

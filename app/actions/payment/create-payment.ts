@@ -21,10 +21,10 @@ interface CreatePaymentResult {
 function getExpiryMinutesByMethod(method: string): number {
     const methodLower = method.toLowerCase();
     if (["qris", "gopay", "ovo", "dana", "shopeepay"].includes(methodLower)) {
-        return 10; // untuk QRIS & E-Wallet
+        return 1; // untuk QRIS & E-Wallet
     }
     if (["bca", "bni", "bri", "mandiri", "permata"].includes(methodLower)) {
-        return 30; // untuk Virtual Account
+        return 3; // untuk Virtual Account
     }
     return 60;
 }
@@ -65,7 +65,7 @@ export async function createPayment(
     }
 
     if (order.status !== "PENDING") {
-        return { error: "Order sudah tidak dapat dibayar." };
+        return { error: "Order kadaluarsa silahkan order ulang." };
     }
 
     // ===========================

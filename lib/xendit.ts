@@ -5,7 +5,7 @@ const XENDIT_API_URL = "https://api.xendit.co"
 export interface CreatePaymentRequestParams {
     referenceId: string
     totalAmount: number
-    method: string // 'qris' | 'shopeepay' | 'gopay' | 'ovo' | 'dana' | 'bca' | 'bni' | dll
+    method: string // 'qris' | 'shopeepay' | 'gopay' | 'ovo' | 'dana' | 'bca' | 'bni' | 'bri' | 'mandiri' | 'permata' | 'cimb' | dll
     description?: string
     customerName?: string
     customerEmail?: string
@@ -26,6 +26,10 @@ export interface PaymentRequestResult {
     rawResponse?: any
 }
 
+// Banks that use the {BANK}_VIRTUAL_ACCOUNT channel_code convention
+const VA_BANKS = ["BCA", "BNI", "BRI", "MANDIRI", "PERMATA", "CIMB"]
+const EWALLETS = ["SHOPEEPAY", "GOPAY", "OVO", "DANA", "LINKAJA"]
+
 export async function createXenditPaymentRequest(
     params: CreatePaymentRequestParams
 ): Promise<PaymentRequestResult> {
@@ -35,45 +39,49 @@ export async function createXenditPaymentRequest(
 
     const authHeaderValue = Buffer.from(`${XENDIT_SECRET_KEY}:`).toString("base64")
     const methodUpper = params.method.toUpperCase()
+    const isVA = VA_BANKS.includes(methodUpper)
+    const isEwallet = EWALLETS.includes(methodUpper)
+    const isQris = methodUpper === "QRIS"
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
     const successReturnUrl = params.successReturnUrl || `${siteUrl}/orders/success`
     const failureReturnUrl = params.failureReturnUrl || `${siteUrl}/checkout?status=failed`
-    const cancelReturnUrl = params.cancelReturnUrl || `${siteUrl}/checkout?status=cancelled`
 
     const expiryMinutes = params.expiresInMinutes || 60
     const expiryIsoString = new Date(Date.now() + expiryMinutes * 60 * 1000).toISOString()
 
-    // Base request payload sesuai v3 Direct Request
+    // Base request payload sesuai v3 Payment Requests
     const requestBody: any = {
         reference_id: params.referenceId,
-        type: "PAY",
+        // VA numbers are a reusable payment code (a fixed number a customer transfers into),
+        // everything else here is a single-shot payment.
+        type: isVA ? "REUSABLE_PAYMENT_CODE" : "PAY",
         country: "ID",
         currency: "IDR",
         request_amount: Math.round(params.totalAmount),
-        capture_method: "AUTOMATIC",
-        channel_code: methodUpper,
+        channel_code: isVA ? `${methodUpper}_VIRTUAL_ACCOUNT` : methodUpper,
         description: params.description || `Pembayaran Pesanan #${params.referenceId.substring(0, 8).toUpperCase()}`,
-        metadata: {
-            reference_id: params.referenceId,
-        },
     }
 
-    // Penanganan channel_properties
-    if (["SHOPEEPAY", "GOPAY", "OVO", "DANA", "LINKAJA"].includes(methodUpper)) {
+    // capture_method only applies to PAY / PAY_AND_SAVE requests, not REUSABLE_PAYMENT_CODE
+    if (!isVA) {
+        requestBody.capture_method = "AUTOMATIC"
+    }
+
+    // Penanganan channel_properties per jenis channel
+    if (isEwallet) {
         requestBody.channel_properties = {
             success_return_url: successReturnUrl,
             failure_return_url: failureReturnUrl,
-            cancel_return_url: cancelReturnUrl,
         }
-    } else if (methodUpper === "QRIS") {
+    } else if (isQris) {
         requestBody.channel_properties = {
             expires_at: expiryIsoString,
             qr_string_type: "DYNAMIC",
         }
-    } else if (["BCA", "BNI", "BRI", "MANDIRI", "PERMATA", "CIMB"].includes(methodUpper)) {
+    } else if (isVA) {
         requestBody.channel_properties = {
-            customer_name: params.customerName || "Customer",
+            display_name: params.customerName || "Customer",
             expires_at: expiryIsoString,
         }
     }
@@ -95,20 +103,15 @@ export async function createXenditPaymentRequest(
         throw new Error(data.message || data.error_code || "Gagal membuat Payment Request di Xendit.")
     }
 
-    // Aliasing objek penampung
-    const cp = data.channel_properties || {}
-    const pm = data.payment_method || {}
-    const pmCp = pm.channel_properties || {}
-
-    // 1. EKSTRAKSI EXPIRES_AT
     // --- 1. Ekstraksi Waktu Expiry ---
-    // Catatan: ShopeePay dari Xendit biasanya berlaku 30 menit dari field `created` jika `expires_at` tidak dikirim balik
-    let expires_at: string | undefined =
+    // Fallback ke nilai expiry yang sudah kita kirim ke Xendit (expiryIsoString),
+    // bukan angka baru yang tidak berhubungan dengan expiryMinutes.
+    const expires_at: string | undefined =
         data.expires_at ||
         data.channel_properties?.expires_at ||
-        new Date(new Date(data.created).getTime() + 1 * 60 * 1000).toISOString()
+        expiryIsoString
 
-    // --- 2. Ekstraksi dari Array Actions (Gaya API v3 2024-11-11) ---
+    // --- 2. Ekstraksi dari Array Actions (API v3 2024-11-11) ---
     let deeplink_url: string | undefined = undefined
     let qr_string: string | undefined = undefined
     let account_number: string | undefined =
@@ -130,7 +133,6 @@ export async function createXenditPaymentRequest(
         // B. Cari QR String (jika user mau bayar via QR)
         const qrAction = data.actions.find(
             (a: any) =>
-                a.type === "PRESENT_TO_CUSTOMER" ||
                 a.descriptor === "QR_STRING" ||
                 a.descriptor === "QR_CODE"
         )
@@ -138,7 +140,7 @@ export async function createXenditPaymentRequest(
             qr_string = qrAction.value
         }
 
-        // C. Cari VA Number (jika nanti panggil metode VA)
+        // C. Cari VA Number
         const vaAction = data.actions.find(
             (a: any) => a.descriptor === "VIRTUAL_ACCOUNT_NUMBER"
         )
@@ -147,12 +149,9 @@ export async function createXenditPaymentRequest(
         }
     }
 
-    // Helper Fallback dari channel_properties
+    // Fallback dari channel_properties jika tidak ada di actions
     if (!qr_string) qr_string = data.channel_properties?.qr_string
     if (!deeplink_url) deeplink_url = data.channel_properties?.mobile_web_checkout_url
-
-    // console.log('ekstraksi data dari xendit ', data);
-
 
     return {
         id: data.payment_request_id || data.id,
@@ -164,4 +163,30 @@ export async function createXenditPaymentRequest(
         account_number,
         rawResponse: data,
     }
+}
+
+export async function cancelXenditPaymentRequest(paymentRequestId: string): Promise<any> {
+    const authHeaderValue = Buffer.from(`${XENDIT_SECRET_KEY}:`).toString("base64")
+
+    const response = await fetch(
+        `${XENDIT_API_URL}/v3/payment_requests/${paymentRequestId}/cancel`,
+        {
+            method: "POST",
+            headers: {
+                "Authorization": `Basic ${authHeaderValue}`,
+                "Content-Type": "application/json",
+                "api-version": "2024-11-11",
+            },
+        }
+    )
+
+    const data = await response.json()
+
+    if (!response.ok) {
+        // e.g. already SUCCEEDED/EXPIRED/CANCELLED — not always a hard failure for your flow,
+        // but you must branch on it rather than assume cancel always works.
+        throw new Error(data.message || data.error_code || "Gagal membatalkan Payment Request di Xendit.")
+    }
+
+    return data
 }

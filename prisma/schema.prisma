@@ -246,6 +246,7 @@ enum OrderStatus {
   PENDING
   COMPLETED
   CANCELLED
+  EXPIRED
 }
 
 enum PaymentStatus {
@@ -253,8 +254,8 @@ enum PaymentStatus {
   PAID
   EXPIRED
   FAILED
-  SETTLED
-  VERIFIED
+  REFUNDED
+  CANCELLED
 }
 
 model Order {
