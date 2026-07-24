@@ -12,7 +12,6 @@ import {
   Globe,
   Award
 } from 'lucide-react';
-import Footer from '@/components/footer';
 
 // Data Profil Single Contributor (Kamu)
 const founder = {
@@ -135,7 +134,7 @@ const AboutPage = () => {
                   </div>
 
                   <p className="text-slate-600 text-sm leading-relaxed border-t border-slate-100 pt-5 mt-6">
-                    "{founder.bio}"
+                    &ldquo;{founder.bio}&rdquo;
                   </p>
 
                   {/* Fixed Social Buttons Icons */}

@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, AssetType, MediaType, Role } from "@prisma/client";
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 import * as bcrypt from "bcryptjs";
 
@@ -11,177 +11,202 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   console.log("🌱 Starting Database Seeding...");
 
-  // 1. Seed / Upsert Test User
-  const email = "erick@gmail.com";
+  // 1. Seed / Upsert Test Admin User
+  const adminEmail = "erick@gmail.com";
   const hashedPassword = await bcrypt.hash("password", 10);
 
-  const user = await prisma.user.upsert({
-    where: { email },
+  const admin = await prisma.user.upsert({
+    where: { email: adminEmail },
     update: {
       password: hashedPassword,
       name: "Erick",
-      role: "ADMIN",
+      role: Role.ADMIN,
     },
     create: {
-      email,
+      email: adminEmail,
       name: "Erick",
       password: hashedPassword,
-      role: "ADMIN",
+      role: Role.ADMIN,
     },
   });
 
-  console.log("✅ Admin / Test User created:", user.email);
+  console.log("✅ Admin user ready:", admin.email);
 
   // 2. Seed Categories
-  const categoryDesign = await prisma.category.upsert({
-    where: { slug: "templates-design" },
-    update: {},
-    create: {
-      name: "Templates Canva & Design",
-      slug: "templates-design",
-    },
-  });
+  const categoriesData = [
+    { name: "Source Code & Templates", slug: "source-code-templates" },
+    { name: "UI/UX Kits", slug: "ui-ux-kits" },
+    { name: "E-Books & Guides", slug: "ebooks-guides" },
+  ];
 
-  const categoryDev = await prisma.category.upsert({
-    where: { slug: "source-code-scripts" },
-    update: {},
-    create: {
-      name: "Source Code & Scripts",
-      slug: "source-code-scripts",
-    },
-  });
+  const categoriesMap = new Map<string, string>();
 
-  const categoryEbook = await prisma.category.upsert({
-    where: { slug: "ebooks-guides" },
-    update: {},
-    create: {
-      name: "E-Book & Digital Guides",
-      slug: "ebooks-guides",
-    },
-  });
+  for (const cat of categoriesData) {
+    const category = await prisma.category.upsert({
+      where: { slug: cat.slug },
+      update: { name: cat.name },
+      create: { name: cat.name, slug: cat.slug },
+    });
+    categoriesMap.set(cat.slug, category.id);
+  }
 
-  console.log("✅ Categories seeded successfully.");
+  console.log("✅ Categories seeded");
 
-  // 3. Seed Products
-  const dummyProducts = [
+  // 3. Seed Products with Media & Digital Assets
+  const productsData = [
     {
-      name: "Bundle Template Canva Social Media Kit (100+ Feeds & Stories)",
-      slug: "canva-social-media-kit",
-      description: "Koleksi 100+ template Canva profesional dan estetis untuk Instagram Feed, Stories, dan TikTok content.",
-      price: 25000,
-      categoryId: categoryDesign.id,
-      coverImage: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80",
-      assetName: "Link Canva Master Template",
-      linkUrl: "https://canva.com/design/example-template",
-    },
-    {
-      name: "Preset Lightroom Aesthetic Cinematic Tone (30+ Mobile & Desktop)",
-      slug: "preset-lightroom-cinematic",
-      description: "Preset Lightroom eksklusif dengan tone warna cinematic, warm aesthetic, dan mood fotografi profesional.",
-      price: 15000,
-      categoryId: categoryDesign.id,
-      coverImage: "https://images.unsplash.com/photo-1512486130939-2c4f79935e4f?w=800&q=80",
-      assetName: "DNG & XMP Preset Zip File",
-      linkUrl: "https://drive.google.com/file/d/example-preset/view",
-    },
-    {
-      name: "Next.js 16 Digital Market Starter Kit (Prisma & Xendit)",
-      slug: "nextjs-digital-market-starter",
-      description: "Source code lengkap platform marketplace produk digital dengan integrasi Xendit Payment Request V2 API.",
-      price: 50000,
-      categoryId: categoryDev.id,
-      coverImage: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=80",
-      assetName: "GitHub Repository Access / Zip",
-      linkUrl: "https://github.com/example/digital-market-starter",
+      name: "Next.js E-Commerce SaaS Starter Kit",
+      slug: "nextjs-ecommerce-saas-starter-kit",
+      description: "A complete production-ready Next.js 14 template integrated with Prisma, Tailwind CSS, and Xendit payment gateway.",
+      price: 250000,
+      isPublished: true,
+      isFeatured: true,
+      coverImage: "https://images.unsplash.com/photo-1555066931-4365d14bab8c",
+      categorySlug: "source-code-templates",
+      media: [
+        { url: "https://images.unsplash.com/photo-1555066931-4365d14bab8c", type: MediaType.IMAGE, sortOrder: 0 },
+        { url: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97", type: MediaType.IMAGE, sortOrder: 1 },
+      ],
+      assets: [
+        {
+          name: "Source Code (.zip)",
+          description: "Full Next.js project repository bundle.",
+          type: AssetType.FILE,
+          fileUrl: "https://storage.example.com/files/nextjs-starter-v1.zip",
+          extension: "zip",
+          fileSize: 15728640, // ~15 MB
+          mimeType: "application/zip",
+          version: "v1.0.0",
+          sortOrder: 0,
+        },
+        {
+          name: "GitHub Private Repository Access",
+          description: "Link to access latest updates directly from GitHub.",
+          type: AssetType.LINK,
+          linkUrl: "https://github.com/example/nextjs-starter-private",
+          version: "v1.0.0",
+          sortOrder: 1,
+        },
+      ],
     },
     {
-      name: "Panduan Mastering Digital Marketing & Ads Automation 2026",
-      slug: "panduan-digital-marketing-2026",
-      description: "E-Book komprehensif langkah demi langkah membangun bisnis produk digital dan iklan otomatis beromzet puluhan juta.",
-      price: 35000,
-      categoryId: categoryEbook.id,
-      coverImage: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&q=80",
-      assetName: "Master E-Book PDF Guide",
-      linkUrl: "https://drive.google.com/file/d/example-ebook/view",
+      name: "Fintech Mobile App UI Kit (Figma)",
+      slug: "fintech-mobile-app-ui-kit-figma",
+      description: "Modern, scalable Fintech & Banking UI Kit containing 80+ clean screens with dark and light mode variants.",
+      price: 150000,
+      isPublished: true,
+      isFeatured: true,
+      coverImage: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8",
+      categorySlug: "ui-ux-kits",
+      media: [
+        { url: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8", type: MediaType.IMAGE, sortOrder: 0 },
+      ],
+      assets: [
+        {
+          name: "Figma File (.fig)",
+          description: "Original Figma design file with design system components.",
+          type: AssetType.FILE,
+          fileUrl: "https://storage.example.com/files/fintech-ui-kit.fig",
+          extension: "fig",
+          fileSize: 45000000, // ~45 MB
+          mimeType: "application/octet-stream",
+          version: "v2.1.0",
+          sortOrder: 0,
+        },
+      ],
+    },
+    {
+      name: "Mastering Prisma & MariaDB Architecture Guide",
+      slug: "mastering-prisma-mariadb-guide",
+      description: "Comprehensive PDF guide covering database optimization, connection pooling with MariaDB, and advanced Prisma ORM pattern.",
+      price: 75000,
+      isPublished: true,
+      isFeatured: false,
+      coverImage: "https://images.unsplash.com/photo-1532012197267-da84d127e765",
+      categorySlug: "ebooks-guides",
+      media: [
+        { url: "https://images.unsplash.com/photo-1532012197267-da84d127e765", type: MediaType.IMAGE, sortOrder: 0 },
+      ],
+      assets: [
+        {
+          name: "Mastering Prisma Book (PDF)",
+          description: "High-resolution PDF version of the complete book.",
+          type: AssetType.FILE,
+          fileUrl: "https://storage.example.com/files/prisma-mariadb-guide.pdf",
+          extension: "pdf",
+          fileSize: 8400000, // ~8.4 MB
+          mimeType: "application/pdf",
+          version: "2026-edition",
+          sortOrder: 0,
+        },
+      ],
     },
   ];
 
-  const createdProducts = [];
+  for (const item of productsData) {
+    const categoryId = categoriesMap.get(item.categorySlug);
 
-  for (const prodData of dummyProducts) {
+    if (!categoryId) {
+      console.warn(`⚠️ Category ${item.categorySlug} not found, skipping product ${item.name}`);
+      continue;
+    }
+
+    // Upsert Product
     const product = await prisma.product.upsert({
-      where: { slug: prodData.slug },
+      where: { slug: item.slug },
       update: {
-        name: prodData.name,
-        price: prodData.price,
-        description: prodData.description,
-        coverImage: prodData.coverImage,
-        isPublished: true,
+        name: item.name,
+        description: item.description,
+        price: item.price,
+        isPublished: item.isPublished,
+        isFeatured: item.isFeatured,
+        coverImage: item.coverImage,
+        categoryId: categoryId,
       },
       create: {
-        name: prodData.name,
-        slug: prodData.slug,
-        description: prodData.description,
-        price: prodData.price,
-        coverImage: prodData.coverImage,
-        categoryId: prodData.categoryId,
-        isPublished: true,
-        media: {
-          create: [
-            {
-              url: prodData.coverImage,
-              type: "IMAGE",
-              sortOrder: 1,
-            },
-          ],
-        },
-        digitalAssets: {
-          create: [
-            {
-              name: prodData.assetName,
-              type: "LINK",
-              linkUrl: prodData.linkUrl,
-            },
-          ],
-        },
+        name: item.name,
+        slug: item.slug,
+        description: item.description,
+        price: item.price,
+        isPublished: item.isPublished,
+        isFeatured: item.isFeatured,
+        coverImage: item.coverImage,
+        categoryId: categoryId,
       },
     });
 
-    createdProducts.push(product);
+    // Reset & Re-create ProductMedia (agar tidak terjadi duplikasi saat re-seed)
+    await prisma.productMedia.deleteMany({ where: { productId: product.id } });
+    await prisma.productMedia.createMany({
+      data: item.media.map((m) => ({
+        productId: product.id,
+        url: m.url,
+        type: m.type,
+        sortOrder: m.sortOrder,
+      })),
+    });
+
+    // Reset & Re-create DigitalAssets
+    await prisma.digitalAsset.deleteMany({ where: { productId: product.id } });
+    await prisma.digitalAsset.createMany({
+      data: item.assets.map((a) => ({
+        productId: product.id,
+        name: a.name,
+        description: a.description,
+        type: a.type,
+        fileUrl: a.fileUrl || null,
+        linkUrl: a.linkUrl || null,
+        extension: a.extension || null,
+        fileSize: a.fileSize || null,
+        mimeType: a.mimeType || null,
+        version: a.version || null,
+        sortOrder: a.sortOrder,
+      })),
+    });
+
+    console.log(`✅ Product seeded: ${product.name}`);
   }
 
-  console.log(`✅ ${createdProducts.length} Products & Digital Assets seeded.`);
-
-  // 4. Seed Cart for User (Erick)
-  const cart = await prisma.cart.upsert({
-    where: { userId: user.id },
-    update: {},
-    create: {
-      userId: user.id,
-    },
-  });
-
-  // Kosongkan cart lalu isi dengan 2 produk pertama
-  await prisma.cartItem.deleteMany({
-    where: { cartId: cart.id },
-  });
-
-  await prisma.cartItem.createMany({
-    data: [
-      {
-        cartId: cart.id,
-        productId: createdProducts[0].id,
-        selected: true,
-      },
-      {
-        cartId: cart.id,
-        productId: createdProducts[2].id,
-        selected: true,
-      },
-    ],
-  });
-
-  console.log("✅ Cart populated with sample products for testing checkout!");
   console.log("🎉 Seeding completed successfully!");
 }
 

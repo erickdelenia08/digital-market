@@ -106,6 +106,7 @@ export function DataTable<TData extends { id: string | number }>({
   data: initialData,
   columns,
   enableTabs = true,
+  // searchKey = "name",
   searchKey = "header",
 }: DataTableProps<TData>) {
   const [data, setData] = useState(() => initialData)
@@ -231,11 +232,13 @@ export function DataTable<TData extends { id: string | number }>({
           />
           <DropdownMenu>
             <DropdownMenuTrigger
-              render={<Button variant="outline" size="sm" />}
+              render={<Button variant="outline" size="sm">
+                <Columns3Icon data-icon="inline-start" />
+                Columns
+                <ChevronDownIcon data-icon="inline-end" />
+              </Button>}
             >
-              <Columns3Icon data-icon="inline-start" />
-              Columns
-              <ChevronDownIcon data-icon="inline-end" />
+
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-32">
               {table

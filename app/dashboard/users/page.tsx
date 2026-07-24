@@ -38,7 +38,7 @@ export default async function UsersPage() {
       </div>
 
       <div className="bg-background border rounded-lg shadow-sm">
-        <DataTable columns={userColumns} data={formattedUsers} />
+        <DataTable columns={userColumns} data={formattedUsers} searchKey="name" />
       </div>
     </div>
   );

@@ -151,6 +151,7 @@ model Product {
   reviews       Review[]
   downloadLogs  DownloadLog[]
   libraries     UserLibrary[]
+  posts         Post[]
 
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
@@ -174,9 +175,7 @@ enum MediaType {
   VIDEO
 }
 
-// ==========================================
 // 3. RATING & REVIEWS
-// ==========================================
 model Review {
   id      String  @id @default(cuid())
   rating  Int
@@ -194,53 +193,37 @@ model Review {
   @@index([productId])
 }
 
-// ==========================================
 // 4. SECURE DIGITAL ASSETS
-// ==========================================
 model DigitalAsset {
-  id        String    @id @default(cuid())
-  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  id String @id @default(cuid())
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String // Relasi One-to-Many (bisa punya banyak aset)
-  name      String // Nama file/aset (misal: "Source File", "Documentation")
-  type      AssetType
-  fileUrl   String?
-  linkUrl   String?
+
+  name        String // Nama file/aset (misal: "Source File", "Documentation")
+  description String?
+  sortOrder   Int     @default(0)
+
+  type    AssetType
+  fileUrl String?
+  linkUrl String?
+
+  downloadLogs DownloadLog[]
+
+  // Metadata File Detail (Penting untuk UI/UX & Valider)
+  extension String? // Contoh: "zip", "aep", "xlsx", "mogrt", "pdf"
+  fileSize  Int? // Ukuran dalam Bytes (misal: 15728640 = ~15 MB)
+  mimeType  String? // "application/zip", "application/vnd.ms-excel"
+  version   String? // Contoh: "v1.0.0", "CS6+", "2026-build"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum AssetType {
   FILE
   LINK
 }
-
-// ==========================================
-// 5. CHECKOUT & TRANSACTIONS
-// ==========================================
-// model Order {
-//   id           String        @id @default(cuid())
-//   user         User          @relation(fields: [userId], references: [id])
-//   userId       String
-//   totalAmount  Int
-//   status       OrderStatus   @default(PENDING)
-//   items        OrderItem[]
-//   downloadLogs DownloadLog[]
-//   createdAt    DateTime      @default(now())
-//   updatedAt    DateTime      @updatedAt
-// }
-
-// enum OrderStatus {
-//   PENDING
-//   PAID
-//   CANCELLED
-// }
-
-// model OrderItem {
-//   id        String  @id @default(cuid())
-//   order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-//   orderId   String
-//   product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
-//   productId String
-//   price     Int
-// }
 
 enum OrderStatus {
   PENDING
@@ -325,14 +308,23 @@ model Payment {
 // 6. SECURITY LOGS & AUDITING
 // ==========================================
 model DownloadLog {
-  id           String   @id @default(cuid())
-  user         User     @relation(fields: [userId], references: [id])
-  userId       String
-  product      Product  @relation(fields: [productId], references: [id])
-  productId    String
-  order        Order    @relation(fields: [orderId], references: [id])
-  orderId      String
+  id String @id @default(cuid())
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  digitalAsset DigitalAsset @relation(fields: [assetId], references: [id])
+  assetId      String
+
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+
+  ipAddress String? // Mengetahui IP pembeli (mencegah akun di-share ke orang lain)
+  userAgent String? // Mengetahui browser/device yang mendownload
+
   downloadedAt DateTime @default(now())
+  order        Order?   @relation(fields: [orderId], references: [id])
+  orderId      String?
 
   @@index([userId, productId])
 }
@@ -353,15 +345,14 @@ model UserLibrary {
   @@index([userId])
 }
 
-// ==========================================
 // 7. BLOG SYSTEM
-// ==========================================
 model Post {
-  id         String  @id @default(cuid())
-  title      String
-  slug       String  @unique
-  excerpt    String? @db.Text // Ringkasan singkat artikel (dipakai di card UI & SEO meta-description)
-  content    String  @db.Text // Isi lengkap artikel (Rich Text / Markdown / HTML)
+  id      String  @id @default(cuid())
+  title   String
+  slug    String  @unique
+  excerpt String? @db.Text // Ringkasan singkat artikel (dipakai di card UI & SEO meta-description)
+
+  content    String  @db.LongText // Isi lengkap artikel (Rich Text / Markdown / HTML)
   coverImage String? // Opsional (mencegah error jika post belum punya gambar sampul)
 
   // Status & Publikasi
@@ -372,25 +363,29 @@ model Post {
   metaTitle       String?
   metaDescription String?
 
+  // 💡 2. Fitur Analytics / Pembaca Artikel
+  viewsCount Int @default(0)
+
   // Relasi ke Author (User)
   author   User   @relation(fields: [authorId], references: [id])
   authorId String
 
   // Relasi ke Kategori Khusus Blog
-  category   PostCategory? @relation(fields: [categoryId], references: [id])
+  category   PostCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   categoryId String?
 
-  // Relasi ke Lampiran Media/Gambar Tambahan
-  media PostMedia[]
+  // 💡 3. Relasi Opsional ke Produk Digital (Content Marketing / Soft Selling)
+  relatedProduct   Product? @relation(fields: [relatedProductId], references: [id], onDelete: SetNull)
+  relatedProductId String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Indexing untuk Performa Query
-  @@index([slug])
   @@index([published, publishedAt])
   @@index([authorId])
   @@index([categoryId])
+  @@index([relatedProductId])
 }
 
 // Model Kategori Khusus Blog
@@ -400,18 +395,6 @@ model PostCategory {
   slug      String   @unique
   posts     Post[]
   createdAt DateTime @default(now())
-}
-
-// Model Lampiran Media (Jika ada gambar/galeri tambahan di luar isi konten)
-model PostMedia {
-  id        String    @id @default(cuid())
-  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
-  postId    String
-  url       String
-  type      MediaType @default(IMAGE)
-  sortOrder Int       @default(0)
-
-  @@index([postId])
 }
 
 model Cart {
