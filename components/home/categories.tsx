@@ -4,14 +4,12 @@ import { FileSpreadsheet, Film, Video, Package, Sparkles, ArrowRight } from 'luc
 import Link from 'next/link';
 import { categories, categoryDescriptions } from '@/mock-data/products';
 import { motion, Variants } from 'framer-motion';
+import { Category } from "@prisma/client";
+import { DynamicIcon } from '../dynamic-icon';
 
-const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
-  "Excel Templates": FileSpreadsheet,
-  "After Effects": Film,
-  "Video Assets": Video,
-  "Creator Toolkits": Package,
-};
-
+interface CategoriesProps {
+  categories: Category[];
+}
 // Next.js Link yang dibungkus Framer Motion untuk navigasi interaktif
 const MotionLink = motion(Link);
 
@@ -33,7 +31,7 @@ const cardVariants: Variants = {
   }
 };
 
-const Categories = () => {
+const Categories = ({ categories }: CategoriesProps) => {
   return (
     <section id="categories" className="py-20 md:py-28 bg-slate-50/40 border-b border-slate-200/60 overflow-hidden">
       <motion.div
@@ -47,7 +45,7 @@ const Categories = () => {
         <div className="text-center max-w-2xl mx-auto space-y-3">
           {/* Raised Emblem Badge */}
           <div className="inline-flex items-center gap-2 bg-accent-indigo/5 border border-accent-indigo/10 px-3.5 py-1.5 rounded-full text-accent-indigo text-[11px] font-black uppercase tracking-widest shadow-inner">
-            <Sparkles className="w-3.5 h-3.5" />
+            {/* <Sparkles className="w-3.5 h-3.5" /> */}
             <span>Browse By Category</span>
           </div>
 
@@ -63,12 +61,10 @@ const Categories = () => {
         {/* --- CATEGORIES GRID --- */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
           {categories.map((category) => {
-            const IconComponent = categoryIcons[category] || Package;
-
             return (
               <MotionLink
-                key={category}
-                href={`/products?category=${encodeURIComponent(category)}`}
+                key={category.id}
+                href={`/products?category=${encodeURIComponent(category.slug)}`}
                 variants={cardVariants}
                 whileHover="hover"
                 className="group bg-white rounded-2xl border border-slate-200/80 p-6 md:p-8 shadow-md shadow-slate-200/30 hover:shadow-xl hover:border-slate-300 hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between cursor-pointer select-none"
@@ -76,17 +72,19 @@ const Categories = () => {
                 <div>
                   {/* Embossed Tactile Icon Container */}
                   <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-inner flex items-center justify-center mb-6 text-accent-indigo group-hover:bg-accent-indigo group-hover:text-white group-hover:border-accent-indigo group-hover:shadow-lg group-hover:shadow-accent-indigo/20 transition-all duration-300">
-                    <IconComponent className="w-5 h-5 stroke-[2.2] transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" />
+                    <DynamicIcon
+                      name={category.icon}
+                      className="w-5 h-5 stroke-[2.2] transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" />
                   </div>
 
                   {/* Category Title */}
                   <h3 className="text-base sm:text-lg font-bold text-primary-900 mb-2 group-hover:text-accent-indigo transition-colors duration-200">
-                    {category}
+                    {category.name}
                   </h3>
 
                   {/* Category Description */}
                   <p className="text-xs sm:text-sm font-medium text-slate-500 leading-relaxed line-clamp-2">
-                    {categoryDescriptions[category]}
+                    {category.description}
                   </p>
                 </div>
 

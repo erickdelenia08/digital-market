@@ -5,56 +5,38 @@ import { Button } from '@/components/ui/button';
 import {
     Search,
     Sparkles,
-    Calendar,
+    // Calendar,
     Layers,
     ArrowUpRight,
-    X,
+    // X,
     ChevronDown,
     Check,
-    Filter,
-    FileText
+    // Filter,
+    // FileText
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Mock Data Lebih Variatif dengan Timestamp untuk Sorting Akurat
-const myPurchasedProducts = [
-    {
-        id: "purchased-1",
-        name: "Bundle Feed Instagram Aesthetic 2026",
-        type: "CANVA",
-        category: "Social Media",
-        tags: ["Instagram", "Aesthetic", "Feed"],
-        coverImage: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500&auto=format&fit=crop",
-        purchaseDate: "21 Juli 2026",
-        timestamp: 1784572800000, // Unix timestamp untuk July 21, 2026
-        accessUrl: "https://canva.com/design/XXXXX/view?mode=template",
-        guideUrl: "/guides/canva-feed",
-    },
-    {
-        id: "purchased-2",
-        name: "Preset CapCut Video Reels Viral",
-        type: "CAPCUT",
-        category: "Video Editing",
-        tags: ["Reels", "TikTok", "Shorts"],
-        coverImage: "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500&auto=format&fit=crop",
-        purchaseDate: "15 Juni 2026",
-        timestamp: 1781481600000,
-        accessUrl: "https://capcut.com/template-link/XXXXX",
-        guideUrl: null,
-    },
-    {
-        id: "purchased-3",
-        name: "Template Excel Laporan Keuangan UMKM",
-        type: "FILE",
-        category: "Finance & Biz",
-        tags: ["Excel", "Keuangan", "UMKM"],
-        coverImage: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=500&auto=format&fit=crop",
-        purchaseDate: "10 Mei 2026",
-        timestamp: 1778368000000,
-        accessUrl: "/downloads/laporan-keuangan.xlsx",
-        guideUrl: null,
-    }
-];
+import AssetsModal from '@/components/asset-modal';
+import Image from 'next/image';
+
+export interface LibraryProduct {
+    id: string;
+    name: string;
+    type: string;
+    category: string;
+    coverImage: string;
+    purchaseDate: string;
+    timestamp: number;
+    digitalAssets: {
+        id: string;
+        name: string;
+        fileUrl: string | null;
+        linkUrl: string | null;
+        type: string;
+        fileSize: number | null;
+        extension: string | null;
+    }[];
+}
 
 const CATEGORY_OPTIONS = [
     { value: "ALL", label: "Semua Kategori" },
@@ -71,13 +53,16 @@ const SORT_OPTIONS = [
     { value: "AZ", label: "Nama: A - Z" }
 ];
 
-const POPULAR_TAGS = ["Instagram", "TikTok", "Excel", "Reels", "Keuangan", "Aesthetic"];
 
-export default function ScalableLibraryComponent() {
+export default function ScalableLibraryComponent({ initialProducts }: { initialProducts: LibraryProduct[] }) {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("ALL");
     const [selectedTag, setSelectedTag] = useState<string | null>(null);
     const [sortBy, setSortBy] = useState("NEWEST");
+
+    // Modal state
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState<LibraryProduct | null>(null);
 
     // Dropdown visibility states
     const [isCategoryOpen, setIsCategoryOpen] = useState(false);
@@ -89,14 +74,14 @@ export default function ScalableLibraryComponent() {
 
     // Filter & Sort Logic
     const filteredProducts = useMemo(() => {
-        let result = myPurchasedProducts.filter(item => {
+        const result = initialProducts.filter(item => {
             const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
             const matchesCategory = selectedCategory === 'ALL' ||
                 item.type === selectedCategory ||
                 item.category === selectedCategory;
-            const matchesTag = !selectedTag || item.tags.includes(selectedTag);
+            // const matchesTag = !selectedTag || item.tags.includes(selectedTag);
 
-            return matchesSearch && matchesCategory && matchesTag;
+            return matchesSearch && matchesCategory;
         });
 
         // Real Execution Sorting
@@ -140,7 +125,7 @@ export default function ScalableLibraryComponent() {
                     <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm w-fit">
                         <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Aset</span>
                         <span className="text-xs font-black bg-accent-indigo/5 text-accent-indigo border border-accent-indigo/10 px-2.5 py-0.5 rounded-lg shadow-inner">
-                            {myPurchasedProducts.length} Item
+                            {initialProducts.length} Item
                         </span>
                     </div>
                 </div>
@@ -243,29 +228,6 @@ export default function ScalableLibraryComponent() {
 
                 {/* --- TAG CHIPS FILTERS --- */}
                 <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0 mr-1 flex items-center gap-1">
-                        <Filter className="w-3 h-3" /> Filter Tag:
-                    </span>
-
-                    <div className="flex gap-2">
-                        {POPULAR_TAGS.map((tag) => {
-                            const isSelected = selectedTag === tag;
-                            return (
-                                <button
-                                    key={tag}
-                                    onClick={() => setSelectedTag(isSelected ? null : tag)}
-                                    className={`text-xs font-bold px-3.5 py-1.5 rounded-xl border transition-all duration-200 shrink-0 flex items-center gap-1 shadow-sm ${isSelected
-                                        ? 'bg-accent-indigo border-accent-indigo text-white shadow-md shadow-accent-indigo/15 hover:-translate-y-0.5 active:translate-y-0'
-                                        : 'bg-white border-slate-200/80 text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:-translate-y-0.5 active:translate-y-0'
-                                        }`}
-                                >
-                                    <span>#{tag}</span>
-                                    {isSelected && <X className="w-3 h-3 ml-0.5 stroke-[2.5]" />}
-                                </button>
-                            );
-                        })}
-                    </div>
-
                     {/* Tactile Reset Action */}
                     {activeFilterCount > 0 && (
                         <button
@@ -311,10 +273,11 @@ export default function ScalableLibraryComponent() {
                                     >
                                         {/* Canvas Preview Area */}
                                         <div className="relative aspect-[16/10] w-full bg-slate-100 overflow-hidden border-b border-slate-100">
-                                            <img
+                                            <Image
                                                 src={item.coverImage}
                                                 alt={item.name}
-                                                className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
+                                                fill
+                                                className="object-cover group-hover:scale-103 transition-transform duration-500"
                                             />
                                             {/* Raised Platform Token Type Badge */}
                                             <div className="absolute top-3 left-3">
@@ -336,53 +299,36 @@ export default function ScalableLibraryComponent() {
                                                 <h3 className="font-bold text-base text-primary-900 line-clamp-2 group-hover:text-accent-indigo transition-colors duration-200 leading-snug">
                                                     {item.name}
                                                 </h3>
-                                                {/* In-Card Sub-Chips */}
-                                                <div className="flex flex-wrap gap-1 pt-0.5">
-                                                    {item.tags.map(t => (
-                                                        <span key={t} className="text-[10px] font-bold bg-slate-50 border border-slate-100 text-slate-400 px-2 py-0.5 rounded-md shadow-inner">
-                                                            #{t}
-                                                        </span>
-                                                    ))}
-                                                </div>
                                             </div>
 
                                             {/* Action Control Blocks */}
                                             <div className="space-y-2 pt-1 mt-auto">
                                                 <Button
-                                                    nativeButton={false}
-                                                    className="w-full h-11 text-xs font-bold rounded-xl bg-primary-900 hover:bg-primary-950 text-white shadow-lg shadow-primary-900/15 border border-primary-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 group/btn"
-                                                    render={(props) => (
-                                                        <a
-                                                            {...props}
-                                                            href={item.accessUrl}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className={`${props.className} flex items-center justify-center gap-1.5`}
-                                                        >
-                                                            <span>Akses Dashboard Aset</span>
-                                                            <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5" />
-                                                        </a>
-                                                    )}
-                                                />
-
-                                                {item.guideUrl && (
-                                                    <Button
-                                                        nativeButton={false}
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="w-full h-9 text-xs font-bold text-slate-400 hover:text-accent-indigo hover:bg-accent-indigo/5 rounded-xl transition-all"
-                                                        render={(props) => (
-                                                            <a
-                                                                {...props}
-                                                                href={item.guideUrl}
-                                                                className={`${props.className} flex items-center justify-center gap-1.5`}
-                                                            >
-                                                                <FileText className="w-3.5 h-3.5 stroke-[2]" />
-                                                                <span>Panduan Integrasi</span>
-                                                            </a>
-                                                        )}
-                                                    />
-                                                )}
+                                                    onClick={() => {
+                                                        if (item.digitalAssets.length === 1) {
+                                                            const asset = item.digitalAssets[0];
+                                                            if (asset.type === 'LINK' && asset.linkUrl) {
+                                                                window.open(asset.linkUrl, '_blank');
+                                                            } else {
+                                                                const downloadUrl = `/api/downloads/${asset.id}`;
+                                                                const a = document.createElement('a');
+                                                                a.href = downloadUrl;
+                                                                a.setAttribute('download', '');
+                                                                document.body.appendChild(a);
+                                                                a.click();
+                                                                document.body.removeChild(a);
+                                                            }
+                                                        } else if (item.digitalAssets.length > 1) {
+                                                            setSelectedProduct(item);
+                                                            setIsModalOpen(true);
+                                                        }
+                                                    }}
+                                                    disabled={item.digitalAssets.length === 0}
+                                                    className="w-full h-11 text-xs font-bold rounded-xl bg-primary-900 hover:bg-primary-950 text-white shadow-lg shadow-primary-900/15 border border-primary-900 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 group/btn flex items-center justify-center gap-1.5"
+                                                >
+                                                    <span>{item.digitalAssets.length > 1 ? "Pilih Asset / Download" : "Akses / Download"}</span>
+                                                    <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5" />
+                                                </Button>
                                             </div>
                                         </div>
                                     </motion.div>
@@ -393,6 +339,14 @@ export default function ScalableLibraryComponent() {
                 </motion.div>
 
             </div>
+
+            <AssetsModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title={`Assets: ${selectedProduct?.name || ''}`}
+                description="Select and download individual assets included in this package:"
+                assets={selectedProduct?.digitalAssets || []}
+            />
         </div>
     );
 }

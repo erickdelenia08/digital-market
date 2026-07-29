@@ -63,9 +63,20 @@ export async function GET(
         },
     });
 
+    console.log('asset.mimeType', asset.mimeType);
+    console.log('asset.extension', asset.extension);
+    console.log('asset.name', asset.name);
+
     // 6. SAJIKAN FILE UNTUK DI-DOWNLOAD
     // (Mengalirkan file dari Storage Internal/Folder Lokal)
-    const filePath = path.join(process.cwd(), 'private_storage', asset.fileUrl);
+
+    const cleanFileUrl = asset.fileUrl.startsWith('/')
+        ? asset.fileUrl.slice(1)
+        : asset.fileUrl;
+
+    const filePath = path.join(process.cwd(), 'public', cleanFileUrl);
+    console.log('filePath', filePath);
+
     const fileBuffer = fs.readFileSync(filePath);
 
     return new NextResponse(fileBuffer, {

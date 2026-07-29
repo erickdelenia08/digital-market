@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Edit Product | Motion Pack AE v2</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono&amp;display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#fbf8ff",
+                        "on-tertiary-container": "#fffbff",
+                        "on-error": "#ffffff",
+                        "surface-container": "#eeedf7",
+                        "tertiary-fixed": "#ffdcc5",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed": "#301400",
+                        "on-primary-container": "#fffbff",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "on-error-container": "#93000a",
+                        "tertiary": "#904900",
+                        "surface-variant": "#e3e1ec",
+                        "secondary": "#5f5e61",
+                        "on-secondary-container": "#656467",
+                        "inverse-primary": "#c0c1ff",
+                        "outline-variant": "#c7c4d7",
+                        "background": "#fbf8ff",
+                        "secondary-fixed-dim": "#c8c5ca",
+                        "surface-dim": "#dad9e3",
+                        "on-primary-fixed": "#07006c",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb783",
+                        "surface-bright": "#fbf8ff",
+                        "tertiary-container": "#b55d00",
+                        "outline": "#767586",
+                        "on-surface": "#1a1b22",
+                        "on-secondary-fixed-variant": "#47464a",
+                        "surface-tint": "#494bd6",
+                        "on-surface-variant": "#464554",
+                        "primary": "#4648d4",
+                        "on-secondary-fixed": "#1b1b1e",
+                        "on-primary": "#ffffff",
+                        "inverse-surface": "#2f3038",
+                        "surface-container-low": "#f4f2fd",
+                        "surface-container-high": "#e8e7f1",
+                        "primary-fixed": "#e1e0ff",
+                        "on-background": "#1a1b22",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "inverse-on-surface": "#f1effa",
+                        "secondary-fixed": "#e4e1e6",
+                        "primary-container": "#6063ee",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#e3e1ec",
+                        "secondary-container": "#e4e1e6",
+                        "on-tertiary-fixed-variant": "#703700",
+                        "on-secondary": "#ffffff",
+                        "error": "#ba1a1a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "3xl": "64px",
+                        "xs": "4px",
+                        "2xl": "48px",
+                        "container-max": "1280px",
+                        "lg": "24px",
+                        "sm": "8px",
+                        "base": "4px",
+                        "xl": "32px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "h3": ["Inter"], "h2": ["Inter"], "body-lg": ["Inter"], "label": ["Inter"], "h1-mobile": ["Inter"], "h1": ["Inter"], "code": ["JetBrains Mono"], "body-base": ["Inter"], "body-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "h3": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "h2": ["30px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label": ["14px", { "lineHeight": "14px", "fontWeight": "500" }],
+                        "h1-mobile": ["30px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "h1": ["36px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "code": ["13px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-base": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+    </style>
+</head>
+
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+    <!-- TopNavBar -->
+    <header
+        class="bg-surface border-b border-outline-variant flex justify-between items-center px-lg sticky top-0 z-50 w-full h-16">
+        <div class="flex items-center gap-md">
+            <span class="text-h3 font-h3 text-primary">AdminPanel</span>
+            <div class="h-6 w-px bg-outline-variant mx-sm"></div>
+            <nav class="hidden md:flex gap-md">
+                <a class="text-on-surface-variant hover:bg-surface-container-low px-sm py-xs rounded transition-colors font-label text-label"
+                    href="#">Dashboard</a>
+                <a class="text-primary font-bold border-b-2 border-primary px-sm py-xs font-label text-label"
+                    href="#">Products</a>
+                <a class="text-on-surface-variant hover:bg-surface-container-low px-sm py-xs rounded transition-colors font-label text-label"
+                    href="#">Orders</a>
+            </nav>
+        </div>
+        <div class="flex items-center gap-md">
+            <span class="material-symbols-outlined text-on-surface-variant cursor-pointer">notifications</span>
+            <span class="material-symbols-outlined text-on-surface-variant cursor-pointer">help</span>
+            <div
+                class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center overflow-hidden border border-outline-variant">
+                <img alt="User profile" class="w-full h-full object-cover"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9s-dlzy8_1G-gnSaQbZ92znfNHooPc1V90ZSUD5lFPyHQfcHH7kG7sAPFinGfk1kdET3FSREAm5omOO35mpyQo63a1Pi8y_NbBt56p16PhTZNO-BNdZhVzS4Ozi-VJGUqjJgxoKIi-JV2qxa_LSwPEB2VZuOtr0zwG6oudKX3yXyw_--kO8khuAwJgEAW8iK8wrctxIIYYPCPvh6J1bK6D1XeiARx2c8-9xpAYD-0KiOF72mmWNX3">
+            </div>
+        </div>
+    </header>
+    <div class="flex flex-1 overflow-hidden">
+        <!-- SideNavBar -->
+        <aside class="hidden md:flex flex-col h-full py-md px-sm w-[280px] border-r border-outline-variant bg-surface">
+            <div class="px-md mb-xl">
+                <div class="flex items-center gap-sm mb-base">
+                    <div class="w-8 h-8 bg-primary-container rounded flex items-center justify-center">
+                        <span class="material-symbols-outlined text-on-primary">inventory_2</span>
+                    </div>
+                    <span class="font-h3 text-h3 text-primary">Inventory Pro</span>
+                </div>
+                <p class="text-on-surface-variant text-body-sm font-body-sm ml-10">Enterprise Admin</p>
+            </div>
+            <nav class="flex-1 flex flex-col gap-xs">
+                <a class="flex items-center gap-sm px-md py-sm text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg font-label text-label"
+                    href="#">
+                    <span class="material-symbols-outlined">dashboard</span> Dashboard
+                </a>
+                <a class="flex items-center gap-sm px-md py-sm bg-secondary-container text-primary font-semibold rounded-lg transition-transform active:translate-x-1 font-label text-label"
+                    href="#">
+                    <span class="material-symbols-outlined">shopping_bag</span> Products
+                </a>
+                <a class="flex items-center gap-sm px-md py-sm text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg font-label text-label"
+                    href="#">
+                    <span class="material-symbols-outlined">receipt_long</span> Orders
+                </a>
+                <a class="flex items-center gap-sm px-md py-sm text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg font-label text-label"
+                    href="#">
+                    <span class="material-symbols-outlined">group</span> Customers
+                </a>
+                <a class="flex items-center gap-sm px-md py-sm text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg font-label text-label"
+                    href="#">
+                    <span class="material-symbols-outlined">settings</span> Settings
+                </a>
+            </nav>
+            <button
+                class="mt-auto mx-sm bg-primary text-on-primary px-lg py-md rounded-lg font-label text-label flex items-center justify-center gap-sm active:scale-95 transition-transform">
+                <span class="material-symbols-outlined">add</span> Add Product
+            </button>
+        </aside>
+        <!-- Main Canvas -->
+        <main class="flex-1 overflow-y-auto bg-surface-container-lowest p-lg lg:p-2xl">
+            <div class="max-w-container-max mx-auto">
+                <!-- Header -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-2xl gap-md">
+                    <div>
+                        <a class="text-primary font-label text-label flex items-center gap-xs mb-sm hover:underline"
+                            href="#">
+                            <span class="material-symbols-outlined text-sm">arrow_back</span> Back to Products
+                        </a>
+                        <h1 class="font-h1 text-h1">Edit: Motion Pack AE v2</h1>
+                    </div>
+                    <div class="flex gap-md">
+                        <button
+                            class="px-lg py-sm border border-outline-variant rounded-lg text-on-surface hover:bg-surface-container-high transition-colors font-label text-label active:scale-95">Save
+                            as Draft</button>
+                        <button
+                            class="px-lg py-sm bg-primary text-on-primary rounded-lg shadow-sm hover:opacity-90 transition-opacity font-label text-label active:scale-95">Save
+                            Changes</button>
+                    </div>
+                </div>
+                <!-- 2-Column Asymmetric Layout -->
+                <div class="grid grid-cols-1 lg:grid-cols-10 gap-lg">
+                    <!-- Left Column (70%) -->
+                    <div class="lg:col-span-7 flex flex-col gap-lg">
+                        <!-- Basic Information -->
+                        <section class="bg-surface border border-outline-variant rounded-xl p-xl">
+                            <h2 class="font-h3 text-h3 mb-lg">Basic Information</h2>
+                            <div class="space-y-lg">
+                                <div class="flex flex-col gap-sm">
+                                    <label class="font-label text-label text-on-surface-variant">Product Name</label>
+                                    <input
+                                        class="w-full bg-surface border border-outline-variant rounded-lg px-md py-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                                        type="text" value="Motion Pack AE v2">
+                                </div>
+                                <div class="flex flex-col gap-sm">
+                                    <label class="font-label text-label text-on-surface-variant">URL Slug</label>
+                                    <div class="relative">
+                                        <input
+                                            class="w-full bg-surface border border-outline-variant rounded-lg px-md py-sm pr-12 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                                            type="text" value="motion-pack-ae-v2">
+                                        <span
+                                            class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant cursor-pointer hover:text-primary">edit</span>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-sm">
+                                    <label class="font-label text-label text-on-surface-variant">Description</label>
+                                    <div class="border border-outline-variant rounded-lg overflow-hidden">
+                                        <div
+                                            class="bg-surface-container-low px-md py-sm flex gap-md border-b border-outline-variant">
+                                            <span
+                                                class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary">format_bold</span>
+                                            <span
+                                                class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary">format_italic</span>
+                                            <span
+                                                class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary">format_list_bulleted</span>
+                                            <span
+                                                class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary">link</span>
+                                            <div class="w-px h-6 bg-outline-variant"></div>
+                                            <span
+                                                class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary">code</span>
+                                        </div>
+                                        <textarea
+                                            class="w-full p-md bg-surface border-none focus:ring-0 outline-none font-body-base text-body-base"
+                                            rows="6">The Motion Pack AE v2 is a comprehensive toolkit for After Effects creators. It includes over 200 dynamic transitions, title animations, and visual effects presets designed to streamline your workflow and elevate your video production quality. Perfect for social media content, YouTube, and commercial projects.</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        <!-- Media Preview -->
+                        <section class="bg-surface border border-outline-variant rounded-xl p-xl">
+                            <h2 class="font-h3 text-h3 mb-lg">Media Preview</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-lg mb-lg">
+                                <div class="flex flex-col gap-sm">
+                                    <label class="font-label text-label text-on-surface-variant">Cover Image</label>
+                                    <div
+                                        class="relative group aspect-video rounded-lg overflow-hidden border border-outline-variant">
+                                        <img class="w-full h-full object-cover"
+                                            data-alt="A professional product thumbnail for a motion graphics software pack. The image shows a vibrant, dark-themed user interface with colorful abstract light streaks and sleek typography. The overall aesthetic is modern, tech-focused, and premium, utilizing deep indigo and purple gradients with sharp white text elements."
+                                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDx_zKGawmkAsAQkTGCcq2NdPe3AbxH12LRt9GRarP3q-PoUU3Z8k0O2G2JZnzQ1kYENHw86yTs4FMw7GvY6ekUcgIyyVqTLDfjFax4dKb0wPSe7TazWYC3zpRFW4EmMVRU6R64Te4Xq2yIKfWYodO6lO-NK8Ss5tXsdwwWy9ozb7DlzGcxPplUNiR_pwUxJCMizwBtw2Xbswf4hFNXiNXlGPy3Gm6vQD30F58mpB9hUjnnOG0JS3c-">
+                                        <div
+                                            class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <button
+                                                class="bg-surface text-on-surface px-md py-sm rounded-lg font-label text-label flex items-center gap-xs shadow-md">
+                                                <span class="material-symbols-outlined">image_search</span> Replace
+                                                Image
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-sm">
+                                    <label class="font-label text-label text-on-surface-variant">Gallery
+                                        Previews</label>
+                                    <div class="grid grid-cols-2 gap-sm h-full">
+                                        <div
+                                            class="rounded-lg overflow-hidden border border-outline-variant aspect-video">
+                                            <img class="w-full h-full object-cover"
+                                                data-alt="A detailed preview shot of a motion graphics project in After Effects. The screen displays a complex timeline with multiple layers and keyframes, with a workspace showing vibrant geometric patterns. Bright and professional lighting highlights the technical sophistication."
+                                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCj43_M5WjTCjNTotFlZfbzoJq0uOxnXqU6T6S4ewvjZfD22r85_WTEe47xJ4up2a0VXy_9RoyGq4VQ9zgsSby2VM0PvAS3KCYgEDOSgk4Rgf4ZD23kux0Q9BnhC1HGStQidK3eKpXvki66ew2WJWPz1wl5LH84sHRFVU9WLqVljs2DRHlc0JPye6S-kDuC1lKNx73vhvaenutHihfNbp89Zc4KdSoFfqPrqxIf6i9aY85dmDkx9_93">
+                                        </div>
+                                        <div
+                                            class="border-2 border-dashed border-outline-variant rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-surface-container-low transition-colors aspect-video">
+                                            <span
+                                                class="material-symbols-outlined text-on-surface-variant">add_circle</span>
+                                            <span class="font-label text-label text-on-surface-variant mt-xs">+ Upload
+                                                Preview</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        <!-- Digital Assets -->
+                        <section class="bg-surface border border-outline-variant rounded-xl p-xl">
+                            <div class="flex justify-between items-center mb-lg">
+                                <h2 class="font-h3 text-h3">Digital Assets</h2>
+                                <div class="flex gap-sm"><button
+                                        class="px-sm py-xs border border-outline-variant rounded text-on-surface-variant hover:bg-surface-container-high text-body-sm flex items-center gap-xs transition-colors"><span
+                                            class="material-symbols-outlined text-sm">add</span> Upload New File (.zip,
+                                        .pdf)</button><button
+                                        class="px-sm py-xs border border-outline-variant rounded text-on-surface-variant hover:bg-surface-container-high text-body-sm flex items-center gap-xs transition-colors"><span
+                                            class="material-symbols-outlined text-sm">link</span> Add External Link
+                                        (Drive/Notion)</button></div>
+                            </div>
+                            <div
+                                class="flex items-center justify-between p-md bg-surface-container-low rounded-lg border border-outline-variant">
+                                <div class="flex items-center gap-md">
+                                    <div
+                                        class="w-10 h-10 bg-primary-container/20 rounded flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-primary"
+                                            style="font-variation-settings: &quot;FILL&quot; 1;">folder_zip</span>
+                                    </div>
+                                    <div>
+                                        <p class="font-label text-label text-on-surface">motion-pack-v2-final.zip</p>
+                                        <p class="text-on-surface-variant text-body-sm">120 MB</p><span
+                                            class="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold uppercase rounded-full">Uploaded</span>
+                                    </div>
+                                </div>
+                                <button class="text-error hover:bg-error/10 p-sm rounded-full transition-colors">
+                                    <span class="material-symbols-outlined">delete</span>
+                                </button>
+                            </div>
+                        </section>
+                    </div>
+                    <!-- Right Column (30%) -->
+                    <div class="lg:col-span-3 flex flex-col gap-lg">
+                        <!-- Pricing -->
+                        <section class="bg-surface border border-outline-variant rounded-xl p-lg">
+                            <h2
+                                class="font-label text-label font-bold mb-md uppercase tracking-wider text-on-surface-variant">
+                                Pricing</h2>
+                            <div class="flex flex-col gap-sm">
+                                <label class="font-label text-label text-on-surface-variant">Price (IDR)</label>
+                                <div class="relative">
+                                    <span
+                                        class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-label text-label">Rp</span>
+                                    <input
+                                        class="w-full pl-10 bg-surface border border-outline-variant rounded-lg px-md py-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                                        type="text" value="150.000">
+                                </div>
+                            </div>
+                        </section>
+                        <!-- Organization -->
+                        <section class="bg-surface border border-outline-variant rounded-xl p-lg flex flex-col gap-lg">
+                            <div>
+                                <h2
+                                    class="font-label text-label font-bold mb-md uppercase tracking-wider text-on-surface-variant">
+                                    Organization</h2>
+                                <div class="flex flex-col gap-sm">
+                                    <label class="font-label text-label text-on-surface-variant">Category</label>
+                                    <select
+                                        class="w-full bg-surface border border-outline-variant rounded-lg px-md py-sm outline-none">
+                                        <option>Source Code</option>
+                                        <option>Figma</option>
+                                        <option>E-Book</option>
+                                    </select>
+                                    <button
+                                        class="text-primary text-body-sm font-label flex items-center gap-xs hover:underline mt-xs"
+                                        onclick="document.getElementById('categoryModal').classList.remove('hidden')"><span
+                                            class="material-symbols-outlined text-sm">add</span> Add New
+                                        Category</button>
+                                </div>
+                            </div>
+                            <div class="space-y-md">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-label text-label text-on-surface">Published Status</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input checked="" class="sr-only peer" type="checkbox">
+                                        <div
+                                            class="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary">
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="font-label text-label text-on-surface">Featured Product</span>
+                                    <input
+                                        class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary"
+                                        type="checkbox">
+                                </div>
+                            </div>
+                        </section>
+                        <!-- Metrics -->
+                        <section class="bg-surface border border-outline-variant rounded-xl p-lg">
+                            <h2
+                                class="font-label text-label font-bold mb-md uppercase tracking-wider text-on-surface-variant">
+                                Metrics</h2>
+                            <div
+                                class="bg-surface-container-low p-md rounded-lg space-y-md border border-outline-variant">
+                                <div class="flex justify-between items-center opacity-60">
+                                    <span class="text-body-sm font-body-sm">Total Sales</span>
+                                    <span class="font-label text-label">142</span>
+                                </div>
+                                <div class="flex justify-between items-center opacity-60">
+                                    <span class="text-body-sm font-body-sm">Average Rating</span>
+                                    <span class="font-label text-label flex items-center gap-xs">
+                                        4.8 / 5.0 <span class="material-symbols-outlined text-sm"
+                                            style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <!-- Footer -->
+    <footer
+        class="bg-surface-container-lowest border-t border-outline-variant flex justify-between items-center px-lg py-md w-full mt-auto">
+        <p class="text-secondary font-body-sm text-body-sm">© 2024 Inventory Pro. All rights reserved.</p>
+        <div class="flex gap-lg">
+            <span class="text-on-secondary-container font-body-sm text-body-sm">Items: 1,240</span>
+            <span class="text-on-secondary-container font-body-sm text-body-sm">Page 1 of 50</span>
+        </div>
+    </footer>
+    <!-- Create New Category Modal -->
+    <div class="hidden fixed inset-0 z-[60] flex items-center justify-center p-md" id="categoryModal">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onclick="document.getElementById('categoryModal').classList.add('hidden')"></div>
+        <div class="glass-panel relative w-full max-w-md rounded-xl p-xl shadow-2xl animate-in zoom-in-95 duration-200">
+            <h3 class="font-h3 text-h3 mb-xl">Create New Category</h3>
+            <div class="space-y-lg mb-2xl">
+                <div class="flex flex-col gap-sm">
+                    <label class="font-label text-label text-on-surface-variant">Category Name</label>
+                    <input
+                        class="w-full bg-surface border border-outline-variant rounded-lg px-md py-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                        placeholder="e.g. Video Templates" type="text">
+                </div>
+                <div class="flex flex-col gap-sm">
+                    <label class="font-label text-label text-on-surface-variant">Slug</label>
+                    <input
+                        class="w-full bg-surface border border-outline-variant rounded-lg px-md py-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                        placeholder="video-templates" type="text">
+                </div>
+            </div>
+            <div class="flex justify-end gap-md">
+                <button
+                    class="px-lg py-sm border border-outline-variant rounded-lg hover:bg-surface-container-low transition-colors font-label text-label"
+                    onclick="document.getElementById('categoryModal').classList.add('hidden')">Cancel</button>
+                <button
+                    class="px-lg py-sm bg-primary text-on-primary rounded-lg hover:opacity-90 transition-opacity font-label text-label">Save
+                    Category</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Micro-interaction for toggle and inputs
+        document.querySelectorAll('input, select, textarea').forEach(el => {
+            el.addEventListener('focus', () => {
+                el.parentElement.classList.add('scale-[1.01]');
+            });
+            el.addEventListener('blur', () => {
+                el.parentElement.classList.remove('scale-[1.01]');
+            });
+        });
+    </script>
+
+
+</body>
+
+</html>

@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import Image from 'next/image';
+import { notFound } from 'next/navigation';
 import {
     Calendar,
     ArrowLeft,
@@ -7,59 +9,52 @@ import {
     ShoppingBag,
     UserCheck
 } from 'lucide-react';
-import Footer from '@/components/footer';
+import { prisma } from '@/lib/db';
+import { Metadata } from 'next';
 
-// ==========================================
-// MOCK DATA (100% Match dengan Skema Prisma)
-// ==========================================
-const mockPost = {
-    id: 'post-1',
-    title: 'Memaksimalkan Workflow Frontend dengan Next.js App Router & Tailwind CSS',
-    slug: 'memaksimalkan-workflow-frontend-nextjs',
-    excerpt: 'Panduan mendalam tentang bagaimana mengatur arsitektur komponen React yang efisien, mudah dirawat, dan cepat menggunakan teknik Tailwind terapan.',
-    content: `
-    <p>Dalam pengembangan aplikasi web modern, kecepatan iterasi dan kerapian struktur kode menjadi dua kunci utama keberhasilan tim engineering. Penggunaan Next.js App Router bersama Tailwind CSS menawarkan fondasi yang sangat solid untuk membangun UI responsif berkinerja tinggi.</p>
-    
-    <h2>1. Arsitektur Komponen Sederhana & Terstruktur</h2>
-    <p>Salah satu kesalahan umum developer adalah mencampuradukkan logika fetch data dengan komponen UI visual. Dengan memisahkan Server Components dan Client Components secara tegas, kita dapat mengurangi besarnya bundle JavaScript yang dikirim ke browser pengguna.</p>
-
-    <blockquote>"Kunci utama dari performa aplikasi yang cepat bukanlah menggunakan library paling sedikit, melainkan hanya mengirim kode yang benar-benar dibutuhkan oleh browser."</blockquote>
-
-    <h2>2. Pengelolaan Warna Solid tanpa Gradasi</h2>
-    <p>Desain modern kini banyak beralih ke pendekatan <strong>Tactile Light Tech</strong> yang mengutamakan kontras warna solid, border tipis yang tegas, dan struktur elevasi berbasis bayangan mikro (micro-shadows).</p>
-  `,
-    coverImage: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop',
-    published: true,
-    publishedAt: new Date('2026-07-18'),
-    viewsCount: 1240,
-
-    author: {
-        id: 'user-1',
-        name: 'Your Name',
-        image: null,
-        bio: 'Fokus membangun aset digital dan komponen siap pakai untuk mempercepat workflow para kreator.',
-    },
-
-    category: {
-        id: 'cat-1',
-        name: 'Tutorials',
-        slug: 'tutorials',
-    },
-
-    relatedProduct: {
-        id: 'prod-1',
-        name: 'Next.js & Tailwind Starter Kit',
-        slug: 'nextjs-tailwind-starter-kit',
-        price: 150000,
-        image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=800&auto=format&fit=crop',
-    }
+type Props = {
+    params: Promise<{ slug: string }>;
 };
 
-export default function BlogPostDetailPage() {
-    const post = mockPost;
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { slug } = await params
+    const post = await prisma.post.findUnique({
+        where: { slug: slug },
+    });
+    if (!post) return { title: 'Post Not Found' };
 
-    const avatarInitials = post.author.name
-        ? post.author.name.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase()
+    return {
+        title: post.metaTitle || post.title,
+        description: post.metaDescription || post.excerpt,
+    };
+}
+
+export default async function BlogPostDetailPage({ params }: Props) {
+    const { slug } = await params;
+
+    const post = await prisma.post.findUnique({
+        where: { slug: slug, published: true },
+        include: {
+            author: true,
+            category: true,
+            relatedProduct: true,
+        },
+    });
+    console.log('ini postt , ', post);
+
+
+    if (!post) {
+        return notFound();
+    }
+
+    // Increment views asynchronously
+    prisma.post.update({
+        where: { id: post.id },
+        data: { viewsCount: { increment: 1 } },
+    }).catch(console.error);
+
+    const avatarInitials = post.author?.name
+        ? post.author.name.substring(0, 2).toUpperCase()
         : 'AU';
 
     const formattedDate = post.publishedAt
@@ -87,7 +82,7 @@ export default function BlogPostDetailPage() {
 
                         {post.category && (
                             <Link
-                                href={`/blog/category/${post.category.slug}`}
+                                href={`/blog?category=${post.category.slug}`}
                                 className="px-3 py-1 bg-indigo-50 border border-indigo-100 text-indigo-600 text-xs font-bold rounded-md uppercase tracking-widest shadow-inner hover:bg-indigo-100 transition-colors"
                             >
                                 {post.category.name}
@@ -110,19 +105,11 @@ export default function BlogPostDetailPage() {
                         {/* Author, Date & Views Bar */}
                         <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-200/60 text-xs text-slate-500 font-medium">
                             <div className="flex items-center gap-3">
-                                {post.author.image ? (
-                                    <img
-                                        src={post.author.image}
-                                        alt={post.author.name || 'Author'}
-                                        className="w-10 h-10 rounded-xl object-cover border border-slate-200 shadow-sm"
-                                    />
-                                ) : (
-                                    <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-sm shadow-sm">
-                                        {avatarInitials}
-                                    </div>
-                                )}
+                                <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                                    {avatarInitials}
+                                </div>
                                 <div>
-                                    <div className="font-bold text-slate-900 text-sm">{post.author.name || 'Penulis'}</div>
+                                    <div className="font-bold text-slate-900 text-sm">{post.author?.name || 'Penulis'}</div>
                                     <div className="text-slate-500 text-xs">Author</div>
                                 </div>
                             </div>
@@ -135,7 +122,7 @@ export default function BlogPostDetailPage() {
 
                                 <div className="flex items-center gap-1.5 bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm">
                                     <Eye className="w-3.5 h-3.5 text-slate-500" />
-                                    <span>{post.viewsCount.toLocaleString('id-ID')} x dibaca</span>
+                                    <span>{(post.viewsCount + 1).toLocaleString('id-ID')} x dibaca</span>
                                 </div>
 
                                 <button
@@ -150,11 +137,12 @@ export default function BlogPostDetailPage() {
 
                     {/* --- MAIN COVER IMAGE --- */}
                     {post.coverImage && (
-                        <div className="rounded-3xl overflow-hidden border border-slate-200/80 shadow-md bg-white">
-                            <img
+                        <div className="rounded-3xl overflow-hidden border border-slate-200/80 shadow-md bg-white relative aspect-video">
+                            <Image
                                 src={post.coverImage}
                                 alt={post.title}
-                                className="w-full max-h-[480px] object-cover"
+                                fill
+                                className="w-full object-cover"
                             />
                         </div>
                     )}
@@ -196,18 +184,17 @@ export default function BlogPostDetailPage() {
                         </div>
                         <div className="space-y-1">
                             <div className="flex items-center justify-center sm:justify-start gap-2">
-                                <h4 className="font-bold text-slate-900 text-base">{post.author.name}</h4>
+                                <h4 className="font-bold text-slate-900 text-base">{post.author?.name || 'Author'}</h4>
                                 <UserCheck className="w-4 h-4 text-indigo-600" />
                             </div>
                             <p className="text-slate-500 text-xs leading-relaxed">
-                                {post.author.bio}
+                                Kreator aktif CodeGraph. Fokus membangun aset digital dan komponen siap pakai untuk mempercepat workflow para developer.
                             </p>
                         </div>
                     </div>
 
                 </article>
             </main>
-            <Footer />
         </div>
     );
 }

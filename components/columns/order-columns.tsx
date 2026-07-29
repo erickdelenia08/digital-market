@@ -19,6 +19,8 @@ export type OrderColumn = {
   userName: string;
   totalAmount: number;
   status: OrderStatus;
+  paymentMethod?: string | null;
+  paymentStatus?: string | null;
   createdAt: Date;
 };
 
@@ -53,6 +55,28 @@ export const getOrderColumns = ({ onDelete, onUpdateStatus }: OrderColumnActions
         currency: "IDR",
       }).format(amount);
       return <div>{formatted}</div>;
+    },
+  },
+  {
+    accessorKey: "paymentMethod",
+    header: "Payment Method",
+    cell: ({ row }) => (
+      <div className="font-medium text-muted-foreground uppercase">
+        {row.original.paymentMethod || "-"}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "paymentStatus",
+    header: "Payment Status",
+    cell: ({ row }) => {
+      const status = row.original.paymentStatus;
+      if (!status) return <span>-</span>;
+      return (
+        <div className={`font-semibold text-xs ${status === 'PAID' || status === 'SETTLED' ? 'text-green-600' : status === 'EXPIRED' ? 'text-red-600' : 'text-yellow-600'}`}>
+          {status}
+        </div>
+      );
     },
   },
   {

@@ -1,27 +1,10 @@
-import { ArrowRight, Sparkles, Layers } from 'lucide-react';
+import { ArrowRight, Layers } from 'lucide-react';
 import Link from 'next/link';
 import ProductCard from './product-card';
-import { prisma } from '@/lib/db';
+import { getFeaturedProducts } from '@/lib/product';
 
 const FeaturedProducts = async () => {
-  // Fetch produk yang dipublikasikan dan di-featured dari database MySQL
-  const featuredProducts = await prisma.product.findMany({
-    where: {
-      isPublished: true,
-      isFeatured: true
-    },
-    include: {
-      category: {
-        select: {
-          name: true
-        }
-      }
-    },
-    orderBy: {
-      createdAt: 'desc'
-    },
-    take: 4,
-  });
+  const featuredProducts = await getFeaturedProducts();
 
   return (
     <section id="products" className="py-20 md:py-28 bg-white relative border-b border-slate-200/60 overflow-hidden">
@@ -31,7 +14,7 @@ const FeaturedProducts = async () => {
         <div className="text-center max-w-2xl mx-auto space-y-3">
           {/* Raised Emblem Badge */}
           <div className="inline-flex items-center gap-2 bg-accent-indigo/5 border border-accent-indigo/10 px-3.5 py-1.5 rounded-full text-accent-indigo text-[11px] font-black uppercase tracking-widest shadow-inner">
-            <Sparkles className="w-3.5 h-3.5" />
+            {/* <Sparkles className="w-3.5 h-3.5" /> */}
             <span>Curated Collection</span>
           </div>
 

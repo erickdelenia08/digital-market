@@ -1,17 +1,17 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { getProductBySlug } from "@/app/actions/product";
-
+import { getProductBySlug } from "@/lib/product";
+import type { CartProduct } from "@/types/cart";
 // 1. Ekstrak tipe Product asli dari Prisma
-export type Product = NonNullable<Awaited<ReturnType<typeof getProductBySlug>>>;
 
 interface CartState {
-    cart: Product[];
+    cart: CartProduct[];
     totalAmount: number;
 
     // Actions
-    addToCart: (product: Product) => void;
+    addToCart: (product: CartProduct) => void;
     removeFromCart: (productId: string) => void;
+    setCart: (products: CartProduct[]) => void;
     clearCart: () => void;
     _hasHydrated: boolean;
     setHasHydrated: (state: boolean) => void;
@@ -48,7 +48,14 @@ export const useCartStore = create<CartState>()(
                         totalAmount: updatedTotal,
                     };
                 }),
-
+            setCart: (products) =>
+                set({
+                    cart: products,
+                    totalAmount: products.reduce(
+                        (sum, item) => sum + item.price,
+                        0
+                    ),
+                }),
             clearCart: () => set({ cart: [], totalAmount: 0 }),
         }),
         {

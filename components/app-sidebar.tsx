@@ -17,7 +17,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { LayoutDashboardIcon, ListIcon, Settings2Icon } from "lucide-react"
+import { ArrowLeftRight, LayoutDashboardIcon, ListIcon, NotebookPen, Settings2Icon, UsersRound } from "lucide-react"
 import { Logo } from "@/components/logo"
 import { useSession } from "next-auth/react"
 
@@ -41,6 +41,11 @@ const data = {
           url: "/dashboard/products",
           icon: <ListIcon />,
         },
+        {
+          title: "Article",
+          url: "/dashboard/posts",
+          icon: <NotebookPen />,
+        },
       ],
     },
     {
@@ -49,7 +54,12 @@ const data = {
         {
           title: "Users",
           url: "/dashboard/users",
-          icon: <ListIcon />,
+          icon: <UsersRound />,
+        },
+        {
+          title: "Orders",
+          url: "/dashboard/orders",
+          icon: <ArrowLeftRight />,
         },
       ],
     },

@@ -2,31 +2,25 @@
 
 import { useState, useTransition } from "react";
 import { Star, Calendar, ThumbsUp, MessageSquarePlus, CheckCircle2, Trash2, Edit, MoreVertical } from "lucide-react";
-import { createReview, deleteReview } from "@/app/actions/review-actions"; // Import Server Action
+import { createReview, deleteReview, getUserProductStatus } from "@/app/actions/review-actions"; // Import Server Action
 import { reviewSchema, type ReviewFormValues } from "@/lib/validation/reviews";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useRouter } from "next/navigation";
+import { Product } from "./product-session";
 
-interface ReviewUser {
-    id: string;
-    name: string | null;
-    image: string | null;
-}
 
-interface ReviewItem {
-    id: string;
-    rating: number;
-    comment: string | null;
-    createdAt: Date;
-    user: ReviewUser;
-}
+type ProductReview = Product["reviews"][number];
+
+type UserReview =
+    Awaited<ReturnType<typeof getUserProductStatus>>["userReview"];
 
 interface ProductReviewsSectionProps {
     productId: string;
     averageRating: number;
     reviewCount: number;
-    reviews: ReviewItem[];
+    reviews: ProductReview[];
     hasPurchased: boolean; // Flag apakah user berhak mengulas
-    userReview?: ReviewItem | null; // Ulasan eksis jika user sudah pernah mengulas
+    userReview?: UserReview; // Ulasan eksis jika user sudah pernah mengulas
 }
 
 export default function ProductReviewsSection({
@@ -37,6 +31,7 @@ export default function ProductReviewsSection({
     hasPurchased,
     userReview,
 }: ProductReviewsSectionProps) {
+    const router = useRouter();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [rating, setRating] = useState<number>(userReview?.rating || 5);
     const [hoverRating, setHoverRating] = useState<number>(0);
@@ -91,7 +86,7 @@ export default function ProductReviewsSection({
 
             if (res.success) {
                 setIsDialogOpen(false);
-                window.location.reload();
+                router.refresh()
             } else {
                 setErrorMsg(res.error || "Gagal menyimpan ulasan.");
             }

@@ -116,10 +116,12 @@ model TwoFactorConfirmation {
 // 2. PRODUCT & CATALOG MANAGEMENT
 // ==========================================
 model Category {
-  id       String    @id @default(cuid())
-  name     String    @unique
-  slug     String    @unique
-  products Product[]
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?   @db.Text
+  icon        String?
+  products    Product[]
 }
 
 model Product {
@@ -250,10 +252,6 @@ model Order {
   totalAmount Float
   status      OrderStatus @default(PENDING)
 
-  // xenditInvoiceId String?       @unique
-  // paymentMethod   String?
-  // paymentLog      Json? 
-
   items    OrderItem[]
   payments Payment[]
 
@@ -374,6 +372,8 @@ model Post {
   category   PostCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   categoryId String?
 
+  tags PostTag[]
+
   // 💡 3. Relasi Opsional ke Produk Digital (Content Marketing / Soft Selling)
   relatedProduct   Product? @relation(fields: [relatedProductId], references: [id], onDelete: SetNull)
   relatedProductId String?
@@ -386,6 +386,18 @@ model Post {
   @@index([authorId])
   @@index([categoryId])
   @@index([relatedProductId])
+}
+
+// Model khusus untuk Tag Artikel Blog
+model PostTag {
+  id   String @id @default(cuid())
+  name String @unique // Contoh: "After Effects"
+  slug String @unique // Contoh: "after-effects"
+
+  posts Post[] // Relasi balik ke Post
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // Model Kategori Khusus Blog

@@ -90,6 +90,7 @@ export const updateProfile = async (values: ProfileValues) => {
     })
 
     revalidatePath("/dashboard/settings/profile")
+    revalidatePath("/settings/profile")
     return { 
       success: "Profile updated successfully",
       imagePath: imagePath 

@@ -237,8 +237,6 @@ export default async function OrdersPage() {
 
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

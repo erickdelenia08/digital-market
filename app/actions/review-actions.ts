@@ -16,6 +16,7 @@ export interface CreateReviewInput {
  */
 export async function createReview(input: CreateReviewInput) {
     try {
+        console.log("=== SERVER ACTION: createReview dipanggil ===", input);
         const user = await getAuthUser();
         const { productId, rating, comment } = input;
 
@@ -42,7 +43,7 @@ export async function createReview(input: CreateReviewInput) {
         }
 
         // 3. Gunakan Prisma Transaction untuk konsistensi data
-        await prisma.$transaction(async (tx) => {
+        const updatedProduct = await prisma.$transaction(async (tx) => {
             // Upsert ulasan (Buat baru jika belum ada, atau update jika sudah pernah mengulas)
             await tx.review.upsert({
                 where: {
@@ -74,17 +75,21 @@ export async function createReview(input: CreateReviewInput) {
             const reviewCount = aggregate._count.rating || 0;
 
             // Update data denormalisasi di tabel Product
-            await tx.product.update({
+            return await tx.product.update({
                 where: { id: productId },
                 data: {
                     averageRating: Number(averageRating.toFixed(1)),
                     reviewCount,
                 },
+                select: { slug: true }
             });
         });
 
+        console.log(`akan merefresh halaman /products/${updatedProduct.slug}`);
+
+
         // Revalidate cache Halaman Produk
-        revalidatePath(`/products/${productId}`);
+        revalidatePath(`/products/${updatedProduct.slug}`);
 
         return { success: true, message: "Ulasan berhasil disimpan!" };
     } catch (error: any) {

@@ -18,12 +18,18 @@ export default async function OrdersPage() {
   // typically you might want to restrict this to ADMIN only
   // if (!session?.user || session.user.role !== "ADMIN") {
   if (!session?.user) {
-    redirect("/dashboard");
+    redirect("/");
   }
 
   const orders = await prisma.order.findMany({
     include: {
       user: true,
+      payments: {
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 1,
+      },
     },
     orderBy: {
       createdAt: "desc",
@@ -36,6 +42,8 @@ export default async function OrdersPage() {
     userName: order.user?.name || "No Name",
     totalAmount: order.totalAmount,
     status: order.status,
+    paymentMethod: order.payments[0]?.paymentMethod || null,
+    paymentStatus: order.payments[0]?.status || null,
     createdAt: order.createdAt,
   }));
 

@@ -1,10 +1,10 @@
 import Link from 'next/link';
-import { ArrowRight, Sparkles } from 'lucide-react';
-import { blogs } from '@/mock-data/products';
+import { ArrowRight } from 'lucide-react';
 import BlogCard from './blog-card';
+import { getLatestBlogs } from '@/lib/blog';
 
-const BlogSection = () => {
-  const latestBlogs = blogs.slice(0, 3);
+const BlogSection = async () => {
+  const latestBlogs = await getLatestBlogs();
 
   return (
     <section id="blog" className="py-20 md:py-28 bg-white border-b border-slate-200/60 overflow-hidden">
@@ -15,7 +15,7 @@ const BlogSection = () => {
           <div className="space-y-3">
             {/* Raised Emblem Badge */}
             <div className="inline-flex items-center gap-2 bg-accent-indigo/5 border border-accent-indigo/10 px-3.5 py-1.5 rounded-full text-accent-indigo text-[11px] font-black uppercase tracking-widest shadow-inner">
-              <Sparkles className="w-3.5 h-3.5" />
+              {/* <Sparkles className="w-3.5 h-3.5" /> */}
               <span>From The Blog</span>
             </div>
 
@@ -39,11 +39,17 @@ const BlogSection = () => {
         </div>
 
         {/* --- BLOG GRID --- */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-          {latestBlogs.map((blog) => (
-            <BlogCard key={blog.id} blog={blog} />
-          ))}
-        </div>
+        {latestBlogs.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            {latestBlogs.map((blog) => (
+              <BlogCard key={blog.id} blog={blog} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 text-slate-500">
+            No articles found.
+          </div>
+        )}
 
       </div>
     </section>

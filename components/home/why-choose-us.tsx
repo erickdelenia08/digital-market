@@ -27,7 +27,7 @@ const features = [
 ];
 
 const reasons = [
-  "Designed by professionals, for professionals",
+  // "Designed by professionals, for professionals",
   "Instant download and immediate workspace access",
   "Comprehensive documentation and integration guides",
   "Responsive customer support team"
@@ -83,7 +83,7 @@ const WhyChooseUs = () => {
               variants={fadeUpVariants}
               className="inline-flex items-center gap-2 bg-accent-indigo/5 border border-accent-indigo/10 px-3.5 py-1.5 rounded-full text-accent-indigo text-[11px] font-black uppercase tracking-widest shadow-inner"
             >
-              <Sparkles className="w-3.5 h-3.5" />
+              {/* <Sparkles className="w-3.5 h-3.5" /> */}
               <span>Why Choose Us</span>
             </motion.div>
 
@@ -93,7 +93,7 @@ const WhyChooseUs = () => {
               className="text-3xl sm:text-4xl lg:text-5xl font-black text-primary-900 tracking-tight leading-[1.15]"
             >
               The Premier Gateway for{" "}
-              <span className="bg-gradient-to-r from-accent-indigo to-accent-cyan bg-clip-text text-transparent">
+              <span className="bg-accent-indigo bg-clip-text text-transparent">
                 Modern Digital Creators
               </span>
             </motion.h2>
