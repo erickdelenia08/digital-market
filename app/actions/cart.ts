@@ -1,5 +1,6 @@
 'use server'
 
+import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 
@@ -99,6 +100,14 @@ export async function getCart(userId: string) {
         console.error("Gagal mengambil keranjang:", error);
         return [];
     }
+}
+
+export async function getCartCountAction() {
+    const session = await auth();
+    if (!session?.user) return 0;
+
+    const cart = await getCart(session.user.id);
+    return cart.length;
 }
 
 export async function removeFromCartDB(userId: string, productId: string) {

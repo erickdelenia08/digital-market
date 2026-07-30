@@ -71,9 +71,10 @@ export default function ProductDetailPage({
 
     useEffect(() => {
         if (!_hasHydrated) return;
-
-        setCart(initialCart.map(item => item.product));
-    }, [_hasHydrated, initialCart, setCart]);
+        if (userId) {
+            setCart(initialCart.map(item => item.product));
+        }
+    }, [_hasHydrated, initialCart, setCart, userId]);
 
     if (!_hasHydrated) {
         return (
@@ -110,9 +111,8 @@ export default function ProductDetailPage({
                 return;
             }
 
-            const res = await addToCartDB(userId!, product.id);
+            const res = await addToCartDB(userId, product.id);
             if (res.success) {
-                addToCart(product);
                 router.push('/cart');
             } else {
                 toast.error(res.error || "Terjadi kesalahan");

@@ -10,7 +10,7 @@ import { verifyTwoFactorToken } from "@/lib/totp"
 
 import { LoginSchema } from "@/schemas"
 
-export const login = async (values: z.infer<typeof LoginSchema>) => {
+export const login = async (values: z.infer<typeof LoginSchema>, guestProductIds: string[] = []) => {
   const validatedFields = LoginSchema.safeParse(values)
 
   if (!validatedFields.success) {
@@ -62,6 +62,40 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
       })
     } else {
       return { twoFactor: true }
+    }
+  }
+
+  if (guestProductIds.length > 0) {
+    try {
+      let cart = await prisma.cart.findUnique({
+        where: { userId: existingUser.id },
+        include: { items: true },
+      })
+
+      if (!cart) {
+        cart = await prisma.cart.create({
+          data: { userId: existingUser.id },
+          include: { items: true },
+        })
+      }
+
+      const dbProductIds = cart.items.map((item) => item.productId)
+
+      // Cuma filter produk digital yang BELUM ADA di cart DB user
+      const toAdd = guestProductIds.filter((id) => !dbProductIds.includes(id))
+
+      if (toAdd.length > 0) {
+        await prisma.cartItem.createMany({
+          data: toAdd.map((productId) => ({
+            cartId: cart.id,
+            productId,
+          })),
+          skipDuplicates: true,
+        })
+      }
+    } catch (cartError) {
+      console.error("Gagal sync cart saat login:", cartError)
+      // Sengaja catch error di sini agar jika cart error, proses login user TIDAK dibatalkan
     }
   }
 

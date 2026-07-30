@@ -160,7 +160,7 @@ model Product {
   cartItems CartItem[]
 
   // @@index([slug])
-  @@index([categoryId])
+  @@index([categoryId, deletedAt, name])
 }
 
 model ProductMedia {

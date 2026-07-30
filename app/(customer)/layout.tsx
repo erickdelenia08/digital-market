@@ -1,5 +1,5 @@
 import React from 'react'
-import Navbar from '@/components/navbar'
+import Navbar from '@/components/navbar/navbar'
 import Footer from '@/components/footer'
 import ChatWidget from '@/components/chat-widget'
 const Layout = ({ children }: { children: React.ReactNode }) => {

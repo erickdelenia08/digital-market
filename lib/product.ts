@@ -1,3 +1,5 @@
+'use server'
+
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/db";
 
@@ -72,4 +74,34 @@ export async function getFeaturedProducts() {
             tags: ["featured-products"],
         }
     )();
+}
+
+export async function searchProducts(query: string) {
+    if (!query || query.trim().length < 2) return [];
+
+    try {
+        const products = await prisma.product.findMany({
+            where: {
+                isPublished: true,
+                deletedAt: null, // 🟢 Pastikan tidak mengambil produk yang di-soft-delete
+                OR: [
+                    { name: { contains: query } },        // 🟢 Hapus mode: "insensitive"
+                    { description: { contains: query } }, // 🟢 Hapus mode: "insensitive"
+                ],
+            },
+            select: {
+                id: true,
+                name: true,
+                slug: true,
+                price: true,
+                coverImage: true,
+            },
+            take: 5, // Ambil 5 produk teratas untuk quick preview dropdown
+        });
+
+        return products;
+    } catch (error) {
+        console.error("Search error:", error);
+        return [];
+    }
 }

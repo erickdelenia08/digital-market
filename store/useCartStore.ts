@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { getProductBySlug } from "@/lib/product";
 import type { CartProduct } from "@/types/cart";
 // 1. Ekstrak tipe Product asli dari Prisma
 

@@ -18,10 +18,17 @@ import {
 } from "@/components/ui/input-otp"
 import { login } from "@/app/actions/auth/login"
 import { LoginSchema } from "@/schemas"
+import { useSearchParams } from "next/navigation"
+import { useCartStore } from "@/store/useCartStore"
+import { getSafeCallbackUrl } from "@/lib/get-save-back-url"
 
 type LoginFormValues = z.infer<typeof LoginSchema>
 
 export function LoginForm() {
+  const searchParams = useSearchParams();
+  const rawCallbackUrl = searchParams.get('callbackUrl');
+  const callbackUrl = getSafeCallbackUrl(rawCallbackUrl);
+
   const [showTwoFactor, setShowTwoFactor] = useState(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [showPassword, setShowPassword] = useState<boolean>(false)
@@ -39,7 +46,10 @@ export function LoginForm() {
     setIsLoading(true)
 
     try {
-      const result = await login(data)
+      const guestCart = useCartStore.getState().cart;
+      const cleanProductIds = guestCart.map((item) => String(item.id));
+
+      const result = await login(data, cleanProductIds)
 
       if (result?.error) {
         toast.error(result.error)
@@ -53,8 +63,10 @@ export function LoginForm() {
         return
       }
 
+      useCartStore.getState().clearCart();
+
       toast.success("Selamat datang kembali di CodeGraph!")
-      window.location.assign("/dashboard")
+      window.location.assign(callbackUrl);
     } catch {
       toast.error("Terjadi kesalahan. Silakan coba lagi.")
       setIsLoading(false)
