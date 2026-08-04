@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -111,10 +111,10 @@ export default function PostForm({ initialData }: { initialData?: any }) {
     },
   });
 
-  const { formState: { isSubmitting, errors }, watch, setValue, handleSubmit, control } = form;
-  const content = watch("content");
-  const coverImage = watch("coverImage");
-  const currentTags = watch("tags") || [];
+  const { formState: { isSubmitting, errors }, setValue, handleSubmit, control } = form;
+  const content = useWatch({ control, name: "content" });
+  const coverImage = useWatch({ control, name: "coverImage" });
+  const currentTags = useWatch({ control, name: "tags" }) || [];
 
   useEffect(() => {
     async function loadData() {
@@ -367,7 +367,7 @@ export default function PostForm({ initialData }: { initialData?: any }) {
               <Label>Cover Image</Label>
               <div className="relative aspect-video overflow-hidden rounded-lg border bg-muted flex items-center justify-center">
                 {coverImage ? (
-                  <Image src={coverImage} alt="Cover" fill className="object-cover" />
+                  <Image key={coverImage} src={coverImage} alt="Cover" fill className="object-cover" />
                 ) : (
                   <ImageIcon className="h-8 w-8 text-muted-foreground opacity-50" />
                 )}
@@ -389,14 +389,20 @@ export default function PostForm({ initialData }: { initialData?: any }) {
                     toast.error("Please upload an image file.");
                     return;
                   }
+
+                  // preview instan
+                  const previewUrl = URL.createObjectURL(file);
+                  setValue("coverImage", previewUrl, { shouldDirty: true });
+
                   const reader = new FileReader();
                   reader.onload = async (event) => {
                     const base64Str = event.target?.result as string;
                     setIsUploadingCover(true);
-                    const res = await uploadSingleImage(base64Str, "covers");
+                    const res = await uploadSingleImage(base64Str, "covers", coverImage);
                     setIsUploadingCover(false);
                     if (res.success && res.url) {
-                      setValue("coverImage", res.url, { shouldValidate: true, shouldDirty: true });
+                      const bustedUrl = `${res.url}${res.url.includes("?") ? "&" : "?"}t=${Date.now()}`;
+                      setValue("coverImage", bustedUrl, { shouldValidate: true, shouldDirty: true });
                       toast.success("Cover image uploaded!");
                     } else {
                       toast.error(res.error || "Failed to upload image");

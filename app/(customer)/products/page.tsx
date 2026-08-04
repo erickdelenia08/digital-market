@@ -1,6 +1,19 @@
 import React, { Suspense } from 'react'
 import ProductListingPage from '@/components/product/product-listing-page'
 import { prisma } from '@/lib/db'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Explore All Digital Assets & Templates',
+  description:
+    'Browse our complete collection of premium Canva templates, automated Excel spreadsheets, and design resources at Codegraph.',
+  openGraph: {
+    title: 'Explore All Digital Assets & Templates | Codegraph',
+    description:
+      'Browse our complete collection of premium Canva templates, automated Excel spreadsheets, and design resources at Codegraph.',
+    url: '/products',
+  },
+}
 
 const ProductPage = async () => {
   const products = await prisma.product.findMany({

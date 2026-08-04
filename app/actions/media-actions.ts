@@ -55,13 +55,30 @@ export async function removeMedia(mediaId: string, productId: string) {
   }
 }
 
-export async function uploadSingleImage(base64File: string, folder: string = "uploads") {
+export async function uploadSingleImage(base64File: string, folder: string = "uploads", oldPath?: string | null) {
   try {
     // Using a generic prefix
-    const url = await uploadImage(base64File, `cover`, null, folder);
+    const url = await uploadImage(base64File, `cover`, oldPath, folder);
     return { success: true, url };
   } catch (error: any) {
+    // console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+
     console.error("Failed to upload image:", error);
     return { success: false, error: "Failed to upload image" };
+  }
+}
+
+// Tambahkan di bagian bawah file server action kamu
+export async function deleteSingleImage(url: string) {
+  try {
+    if (!url) return { success: false, error: "No URL provided" };
+
+    // Hapus file fisik lokal/cloud menggunakan helper deleteImage kamu
+    await deleteImage(url);
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("Failed to delete image:", error);
+    return { success: false, error: "Failed to delete image file" };
   }
 }

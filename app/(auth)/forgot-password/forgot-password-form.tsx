@@ -90,10 +90,10 @@ export function ForgotPasswordForm() {
 
               <div className="space-y-1.5">
                 <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
-                  Periksa Email Kamu
+                  Check Your Email
                 </h1>
                 <p className="text-sm text-slate-500 leading-relaxed">
-                  Kami telah mengirimkan instruksi reset kata sandi ke alamat{" "}
+                  We have sent password reset instructions to the address{" "}
                   <span className="font-semibold text-slate-800">{submittedEmail}</span>
                 </p>
               </div>
@@ -114,10 +114,10 @@ export function ForgotPasswordForm() {
               {/* Header Kartu */}
               <div className="mb-6 text-center space-y-1">
                 <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                  Lupa Kata Sandi?
+                  Forgot Password?
                 </h1>
                 <p className="text-sm text-slate-500">
-                  Masukkan email kamu untuk menerima tautan pemulihan
+                  Enter your email to receive password reset instructions
                 </p>
               </div>
 
@@ -142,8 +142,8 @@ export function ForgotPasswordForm() {
                     disabled={isLoading}
                     {...form.register("email")}
                     className={`h-11 rounded-xl bg-slate-50/50 border-slate-200 focus-visible:ring-indigo-600 ${form.formState.errors.email
-                        ? "border-rose-500 focus-visible:ring-rose-500 bg-rose-50/20"
-                        : "hover:border-slate-300"
+                      ? "border-rose-500 focus-visible:ring-rose-500 bg-rose-50/20"
+                      : "hover:border-slate-300"
                       }`}
                   />
                   {form.formState.errors.email && (
@@ -164,7 +164,7 @@ export function ForgotPasswordForm() {
                   ) : (
                     <span className="flex items-center gap-2">
                       <Mail className="w-4 h-4" />
-                      <span>Kirim Tautan Reset</span>
+                      <span>Send Reset Link</span>
                     </span>
                   )}
                 </Button>
@@ -179,20 +179,20 @@ export function ForgotPasswordForm() {
               className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-indigo-600 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Kembali ke Halaman Masuk</span>
+              <span>Back to Login</span>
             </Link>
           </div>
         </div>
 
         {/* --- FOOTER ATURAN / TERMS --- */}
         <p className="mt-6 text-center text-[11px] text-slate-400 leading-relaxed px-4">
-          Dengan melanjutkannya, Anda menyetujui{" "}
+          By continuing, you agree to{" "}
           <Link href="/terms" className="underline underline-offset-4 hover:text-slate-600">
-            Ketentuan Layanan
+            Terms of Service
           </Link>{" "}
-          dan{" "}
+          and{" "}
           <Link href="/privacy" className="underline underline-offset-4 hover:text-slate-600">
-            Kebijakan Privasi
+            Privacy Policy
           </Link>{" "}
           CodeGraph.
         </p>

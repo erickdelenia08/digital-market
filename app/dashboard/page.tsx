@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default async function DashboardPage() {
   // Fetch SectionCards data
   const totalUsers = await prisma.user.count();
-  
+
   // Calculate total revenue
   const orders = await prisma.order.findMany({
     where: {
@@ -25,7 +25,7 @@ export default async function DashboardPage() {
   });
 
   const totalRevenue = orders.reduce((sum, order) => sum + order.totalAmount, 0);
-  
+
   // Chart data (Group revenue by date)
   const revenueByDate: Record<string, number> = {};
   orders.forEach((order) => {
@@ -62,11 +62,11 @@ export default async function DashboardPage() {
   return (
     <div className="@container/main flex flex-1 flex-col gap-2">
       <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-        <SectionCards 
-          totalRevenue={totalRevenue} 
-          newCustomers={newCustomers} 
-          activeAccounts={totalUsers} 
-          growthRate={growthRate} 
+        <SectionCards
+          totalRevenue={totalRevenue}
+          newCustomers={newCustomers}
+          activeAccounts={totalUsers}
+          growthRate={growthRate}
         />
         <div className="px-4 lg:px-6">
           <ChartAreaInteractive chartData={chartData} />

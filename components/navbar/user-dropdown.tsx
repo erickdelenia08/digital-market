@@ -4,72 +4,97 @@ import Link from 'next/link';
 import { User } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 import { useQueryClient } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'motion/react'
+import { useState, useRef, useEffect } from 'react';
 
 export const UserDropdown = () => {
     const { data: session, status } = useSession();
+    const ref = useRef<HTMLDivElement | null>(null)
     const queryClient = useQueryClient();
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+    useEffect(() => {
+        const handleCLickOutside = (event: MouseEvent) => {
+            if (ref.current && !ref.current.contains(event.target as Node)) {
+                setIsMenuOpen(false)
+            }
+        }
+        document.addEventListener('mousedown', handleCLickOutside);
+        return () => { document.removeEventListener('mousedown', handleCLickOutside) }
+    }, [])
     const handleLogout = async () => {
         await signOut({ callbackUrl: '/login' });
         queryClient.removeQueries({ queryKey: ['cart'] });
     };
 
     return (
-        <div className="relative group">
-            <div className="p-2.5 text-slate-600 group-hover:text-primary-900 rounded-full shadow-sm bg-white border border-slate-100 hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center cursor-pointer">
+        <div className="relative inline-block select-none" ref={ref}>
+            <div
+                onClick={() => { setIsMenuOpen((prev) => !prev) }}
+                className="p-2.5 text-slate-600 hover:text-primary-900 rounded-full shadow-sm bg-white border border-slate-100 hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center cursor-pointer">
                 <User className="w-5 h-5" />
             </div>
 
-            <div className="absolute right-0 top-full pt-5 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-1 group-hover:translate-y-0 z-50">
-                <div className="bg-white rounded-xl shadow-xl shadow-slate-900/5 border border-slate-100 p-1.5">
-                    <ul className="flex flex-col text-sm font-medium text-slate-600">
-                        {status === 'authenticated' && (
-                            <>
-                                <li>
-                                    <Link href="/settings" className="flex w-full hover:bg-slate-50 hover:text-primary-900 py-2 px-4 rounded-lg transition-colors">
-                                        Akun Saya
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link href="/orders" className="flex w-full hover:bg-slate-50 hover:text-primary-900 py-2 px-4 rounded-lg transition-colors">
-                                        Pesanan Saya
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link href="/library" className="flex w-full hover:bg-slate-50 hover:text-primary-900 py-2 px-4 rounded-lg transition-colors">
-                                        Library Saya
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link href="/dashboard" className="flex w-full hover:bg-slate-50 hover:text-primary-900 py-2 px-4 rounded-lg transition-colors">
-                                        Dashboard
-                                    </Link>
-                                </li>
-                            </>
-                        )}
+            <AnimatePresence>
+                {isMenuOpen &&
+                    <motion.div
+                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                        className="absolute right-0 top-full pt-5 w-48 z-50">
+                        <div className="bg-white rounded-xl shadow-xl shadow-slate-900/5 border border-slate-100 p-1.5">
+                            <ul className="flex flex-col text-sm font-medium text-slate-600">
+                                {status === 'authenticated' && (
+                                    <>
+                                        <li>
+                                            <Link href="/settings" className="flex w-full hover:bg-slate-50 hover:text-primary-900 py-2 px-4 rounded-lg transition-colors">
+                                                Profile
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link href="/orders" className="flex w-full hover:bg-slate-50 hover:text-primary-900 py-2 px-4 rounded-lg transition-colors">
+                                                Orders
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link href="/library" className="flex w-full hover:bg-slate-50 hover:text-primary-900 py-2 px-4 rounded-lg transition-colors">
+                                                Download
+                                            </Link>
+                                        </li>
+                                        {session?.user?.role === 'ADMIN' && (
+                                            <li>
+                                                <Link href="/dashboard" className="flex w-full hover:bg-slate-50 hover:text-primary-900 py-2 px-4 rounded-lg transition-colors">
+                                                    Dashboard
+                                                </Link>
+                                            </li>
+                                        )}
+                                    </>
+                                )}
 
-                        <div className="my-1 border-t border-slate-100" />
+                                <div className="my-1 border-t border-slate-100" />
 
-                        <li>
-                            {status === 'authenticated' && session?.user ? (
-                                <button
-                                    onClick={handleLogout}
-                                    className="flex w-full text-left text-red-600 hover:bg-red-50 py-2 px-4 rounded-lg transition-colors font-medium cursor-pointer"
-                                >
-                                    Log Out
-                                </button>
-                            ) : (
-                                <Link
-                                    href="/login"
-                                    className="flex w-full text-left text-red-600 hover:bg-red-50 py-2 px-4 rounded-lg transition-colors font-medium"
-                                >
-                                    Log In
-                                </Link>
-                            )}
-                        </li>
-                    </ul>
-                </div>
-            </div>
+                                <li>
+                                    {status === 'authenticated' && session?.user ? (
+                                        <button
+                                            onClick={handleLogout}
+                                            className="flex w-full text-left text-red-600 hover:bg-red-50 py-2 px-4 rounded-lg transition-colors font-medium cursor-pointer"
+                                        >
+                                            Log Out
+                                        </button>
+                                    ) : (
+                                        <Link
+                                            href="/login"
+                                            className="flex w-full text-left text-red-600 hover:bg-red-50 py-2 px-4 rounded-lg transition-colors font-medium"
+                                        >
+                                            Log In
+                                        </Link>
+                                    )}
+                                </li>
+                            </ul>
+                        </div>
+                    </motion.div>}
+            </AnimatePresence>
         </div>
     );
 };

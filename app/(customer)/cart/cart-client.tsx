@@ -74,6 +74,7 @@ const CartClient = ({ session, initialCart }: Props) => {
                 if (result && !result.success) {
                     throw new Error(result.error || "Gagal menghapus di server");
                 }
+
             } else {
                 removeLocal(id);
             }

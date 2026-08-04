@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { OrderStatus, PaymentStatus } from "@prisma/client";
+import { sendOrderSuccessEmail } from "@/lib/mail";
 
 /**
  * POST /api/webhooks/xendit
@@ -49,31 +50,19 @@ export async function POST(req: Request) {
             },
             include: {
                 order: {
-                    include: { items: true },
+                    include: { items: true, user: true },
                 },
             },
         });
 
         if (!payment || !payment.order) {
             console.error(`Pesanan dengan Reference ID ${referenceId} tidak ditemukan.`);
-            return;
+            // return;
+            return NextResponse.json({ success: true, message: "Ignored: Payment/Order not found" });
         }
 
         const order = payment.order;
         const latestPayment = payment;
-
-
-        // // 3. Cari Order dan Payment Terkait di Database
-        // const order = await prisma.order.findUnique({
-        //     where: { id: referenceId },
-        //     include: {
-        //         items: true,
-        //         payments: {
-        //             orderBy: { createdAt: "desc" },
-        //             take: 1,
-        //         },
-        //     },
-        // });
 
         console.log('order yang ditemukan', order);
 
@@ -153,7 +142,32 @@ export async function POST(req: Request) {
                             },
                         });
                     }
+                    const productIdsInOrder = order.items.map((item) => item.productId);
+
+                    await tx.cartItem.deleteMany({
+                        where: {
+                            cart: {
+                                userId: order.userId, // Memastikan cart milik user yang bersangkutan
+                            },
+                            productId: {
+                                in: productIdsInOrder, // Hanya hapus produk yang dibeli
+                            },
+                        },
+                    });
                 });
+
+                try {
+                    await sendOrderSuccessEmail({
+                        email: order.user.email,
+                        name: order.user.name || "Customer",
+                        orderId: order.id,
+                        totalAmount: `Rp ${Number(order.totalAmount).toLocaleString("id-ID")}`,
+                    });
+                    console.log(`[EMAIL] Notifikasi berhasil dikirim ke ${order.user.email}`);
+                } catch (emailError) {
+                    console.error("[EMAIL ERROR] Gagal mengirim email notifikasi:", emailError);
+                    // Sengaja tidak di-throw agar transaksi DB tidak batal hanya karena kendala server email
+                }
 
                 console.log(`[SUCCESS] Pesanan #${order.id} terbayar. Status diubah ke COMPLETED & UserLibrary di-update.`);
             }

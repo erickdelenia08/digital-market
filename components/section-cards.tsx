@@ -18,11 +18,11 @@ export interface SectionCardsProps {
   growthRate: number;
 }
 
-export function SectionCards({ 
-  totalRevenue = 0, 
-  newCustomers = 0, 
-  activeAccounts = 0, 
-  growthRate = 0 
+export function SectionCards({
+  totalRevenue = 0,
+  newCustomers = 0,
+  activeAccounts = 0,
+  growthRate = 0
 }: Partial<SectionCardsProps>) {
   const formattedRevenue = new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -67,7 +67,7 @@ export function SectionCards({
           </div>
         </CardFooter>
       </Card>
-      
+
       <Card className="@container/card">
         <CardHeader>
           <CardDescription>New Customers</CardDescription>
@@ -91,7 +91,7 @@ export function SectionCards({
           </div>
         </CardFooter>
       </Card>
-      
+
       <Card className="@container/card">
         <CardHeader>
           <CardDescription>Active Accounts</CardDescription>
@@ -112,7 +112,7 @@ export function SectionCards({
           <div className="text-muted-foreground">Total registered users</div>
         </CardFooter>
       </Card>
-      
+
       <Card className="@container/card">
         <CardHeader>
           <CardDescription>Growth Rate</CardDescription>

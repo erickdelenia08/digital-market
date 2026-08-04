@@ -56,7 +56,7 @@ import {
 import { productSchema, ProductInput } from "@/schemas/product-schema";
 import { categorySchema, CategoryInput } from "@/schemas/category-schema";
 import { createProduct, updateProduct, getCategories, createCategory } from "@/app/actions/product-actions";
-import { uploadSingleImage } from "@/app/actions/media-actions";
+import { deleteSingleImage, uploadSingleImage } from "@/app/actions/media-actions";
 import { uploadAssetFile } from "@/app/actions/digital-asset-actions";
 import { DynamicIcon } from "../dynamic-icon";
 
@@ -110,6 +110,25 @@ export function ProductForm({ initialData }: ProductFormProps = {}) {
     control: form.control,
     name: "digitalAssets",
   });
+
+  const handleRemoveMedia = async (index: number) => {
+    const mediaItem = mediaFields[index];
+
+    if (mediaItem?.url) {
+      // Jalankan hapus file fisik di server
+      toast.info("Deleting image file...");
+      const res = await deleteSingleImage(mediaItem.url);
+
+      if (!res.success) {
+        toast.error("Failed to delete file from storage");
+        // Opsional: Tetap lanjut remove dari UI atau hentikan
+      }
+    }
+
+    // Hapus item dari state React Hook Form (UI)
+    removeMedia(index);
+    toast.success("Media removed");
+  };
 
   // Category Modal Form
   const categoryForm = useForm<CategoryInput>({
@@ -327,6 +346,7 @@ export function ProductForm({ initialData }: ProductFormProps = {}) {
                             <div className="relative group aspect-video rounded-lg overflow-hidden border">
                               {field.value ? (
                                 <Image
+                                  key={field.value}
                                   src={field.value}
                                   alt="Cover Preview"
                                   fill
@@ -358,12 +378,15 @@ export function ProductForm({ initialData }: ProductFormProps = {}) {
                                       reader.readAsDataURL(file);
                                       reader.onload = async () => {
                                         const base64Str = reader.result as string;
+                                        const rawCover = form.getValues("coverImage");
+                                        const currentCover = rawCover ? rawCover.split("?")[0] : null;
                                         setIsUploadingCover(true);
-                                        const res = await uploadSingleImage(base64Str);
+                                        const res = await uploadSingleImage(base64Str, "uploads", currentCover);
                                         setIsUploadingCover(false);
 
                                         if (res.success && res.url) {
-                                          form.setValue("coverImage", res.url, { shouldValidate: true });
+                                          const bustedUrl = `${res.url}${res.url.includes("?") ? "&" : "?"}t=${Date.now()}`;
+                                          form.setValue("coverImage", bustedUrl, { shouldValidate: true, shouldDirty: true });
                                           toast.success("Cover image uploaded!");
                                         } else {
                                           toast.error(res.error || "Failed to upload image");
@@ -384,26 +407,62 @@ export function ProductForm({ initialData }: ProductFormProps = {}) {
                     <div className="space-y-2">
                       <FormLabel>Gallery Previews</FormLabel>
                       <div className="grid grid-cols-2 gap-2">
-                        {mediaFields.map((field, index) => (
-                          <div key={field.id} className="relative rounded-lg overflow-hidden border aspect-video group">
-                            <Image
-                              src={field.url}
-                              alt={`Preview ${index + 1}`}
-                              fill
-                              className="object-cover"
-                            />
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                              <Button
-                                type="button"
-                                variant="destructive"
-                                size="icon"
-                                onClick={() => removeMedia(index)}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
+                        {mediaFields.map((field, index) => {
+                          const currentUrl = form.watch(`media.${index}.url`) || field.url;
+
+                          return (
+                            <div key={field.id} className="relative rounded-lg overflow-hidden border aspect-video group">
+                              <Image
+                                key={field.id}
+                                src={currentUrl}
+                                alt={`Preview ${index + 1}`}
+                                fill
+                                className="object-cover"
+                              />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                <Button type="button" variant="secondary" size="icon" className="relative">
+                                  <ImagePlus className="w-4 h-4" />
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                    onChange={async (e) => {
+                                      const file = e.target.files?.[0];
+                                      if (!file) return;
+                                      const reader = new FileReader();
+                                      reader.readAsDataURL(file);
+                                      reader.onload = async () => {
+                                        const base64Str = reader.result as string;
+                                        // const oldUrl = field.url;
+
+                                        const rawOldUrl = form.getValues(`media.${index}.url`) || field.url;
+                                        const oldUrl = rawOldUrl ? rawOldUrl.split("?")[0] : null
+
+                                        toast.info("Replacing image...");
+                                        const res = await uploadSingleImage(base64Str, "gallery", oldUrl);
+                                        if (res.success && res.url) {
+                                          const bustedUrl = `${res.url}${res.url.includes("?") ? "&" : "?"}t=${Date.now()}`;
+                                          form.setValue(`media.${index}.url`, bustedUrl, { shouldValidate: true, shouldDirty: true });
+                                          toast.success("Image replaced!");
+                                        } else {
+                                          toast.error("Failed to replace image");
+                                        }
+                                      };
+                                    }}
+                                  />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="destructive"
+                                  size="icon"
+                                  onClick={() => handleRemoveMedia(index)}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          )
+                        })}
                         <div className="relative border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-accent/50 transition-colors aspect-video text-muted-foreground hover:text-foreground bg-muted/50 overflow-hidden">
                           <Plus className="w-6 h-6" />
                           <span className="text-xs font-medium mt-1">

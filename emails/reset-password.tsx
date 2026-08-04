@@ -18,7 +18,7 @@ interface ResetPasswordEmailProps {
   resetLink: string;
 }
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL ? process.env.NEXT_PUBLIC_APP_URL : "";
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ? process.env.NEXT_PUBLIC_SITE_URL : "";
 const appName = process.env.NEXT_PUBLIC_APP_NAME || "Acme Inc";
 
 export const ResetPasswordEmail = ({
@@ -32,7 +32,7 @@ export const ResetPasswordEmail = ({
         <Body className="bg-[#f6f9fc] font-sans">
           <Container className="bg-white mx-auto py-10 px-5 mb-16 rounded-lg max-w-[480px] shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
             <Img
-              src={`${baseUrl}/logo.png`}
+              src={`${baseUrl}/logo.svg`}
               width="180"
               height="33"
               alt={appName}

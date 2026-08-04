@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { productSchema, ProductInput } from "@/schemas/product-schema";
 import { categorySchema, CategoryInput } from "@/schemas/category-schema";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 // import { validate } from "uuid";
 import { unstable_cache } from "next/cache";
 
@@ -45,7 +45,10 @@ export async function createProduct(data: ProductInput) {
       },
     });
 
+    revalidatePath("/products");
     revalidatePath("/dashboard/products");
+    revalidatePath(`/products/${product.slug}`);
+    updateTag("featured-products")
     return { success: true, data: product };
   } catch (error: unknown) {
     console.error("Failed to create product:", error);
@@ -112,6 +115,9 @@ export async function updateProduct(id: string, data: ProductInput) {
 
     revalidatePath("/dashboard/products");
     revalidatePath(`/dashboard/products/${id}/edit`);
+    revalidatePath("/products");
+    revalidatePath(`/products/${product.slug}`);
+    updateTag("featured-products")
     return { success: true, data: product };
   } catch (error: unknown) {
     console.error("Failed to update product:", error);
@@ -161,7 +167,7 @@ export async function createCategory(data: CategoryInput) {
         icon: validatedData.icon
       },
     });
-
+    updateTag("categories")
     return { success: true, data: category };
   } catch (error: unknown) {
     console.error("Failed to create category:", error);
@@ -179,5 +185,20 @@ export async function getBasicProducts() {
   } catch (error: unknown) {
     console.error("Failed to fetch products:", error);
     return { success: false, error: "Failed to fetch products" };
+  }
+}
+
+export async function deleteProduct(id: string) {
+  try {
+    await prisma.product.delete({
+      where: { id },
+    });
+
+    revalidatePath("/dashboard/products");
+    revalidatePath("/products");
+    return { success: true };
+  } catch (error: unknown) {
+    console.error("Failed to delete product:", error);
+    return { success: false, error: (error as Error).message || "Failed to delete product" };
   }
 }

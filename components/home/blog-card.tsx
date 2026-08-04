@@ -52,7 +52,9 @@ const BlogCard = ({ blog }: BlogCardProps) => {
       <div className="p-6 flex flex-col grow">
         {/* Meta */}
         <div className="flex items-center gap-3 text-sm text-slate-500">
-          <time dateTime={blog.createdAt.toISOString()}>{formattedDate}</time>
+          <time dateTime={blog.createdAt ? new Date(blog.createdAt).toISOString() : ''}>
+            {formattedDate}
+          </time>
           {/* <span className="w-1 h-1 rounded-full bg-slate-300" /> */}
           {/* <span className="truncate">{blog.author.name || 'Anonymous'}</span> */}
         </div>

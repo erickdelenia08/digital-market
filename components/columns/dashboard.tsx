@@ -95,8 +95,8 @@ export const dashboardColumns: ColumnDef<OrderColumnData, unknown>[] = [
         style: "currency",
         currency: "IDR",
       }).format(amount)
- 
-      return <div className="font-medium">{formatted}</div>
+
+      return <div className="font-medium" suppressHydrationWarning>{formatted}</div>
     },
   },
 ]

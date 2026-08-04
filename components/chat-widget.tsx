@@ -55,7 +55,7 @@ export default function ChatWidget() {
 
             {/* Chat Window Container */}
             {isOpen && (
-                <div className="w-80 sm:w-96 h-[500px] bg-white rounded-3xl shadow-2xl border border-slate-200/90 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
+                <div className="w-80 sm:w-96 h-125 bg-white rounded-3xl shadow-2xl border border-slate-200/90 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
 
                     {/* Header (Tactile Dark Bar) */}
                     <div className="p-4 bg-slate-900 text-white flex justify-between items-center border-b border-slate-800">
@@ -90,9 +90,9 @@ export default function ChatWidget() {
                                 <div className="w-9 h-9 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center mx-auto text-indigo-600 shadow-inner">
                                     <Sparkles className="w-4 h-4" />
                                 </div>
-                                <p className="text-xs font-bold text-slate-800">Halo! Ada yang bisa dibantu?</p>
+                                <p className="text-xs font-bold text-slate-800">Hello! What can I help you?</p>
                                 <p className="text-[11px] text-slate-500 leading-relaxed">
-                                    Tanyakan seputar produk digital, lisensi, atau masalah pembayaran kamu.
+                                    Ask about digital products, licenses, or payment issues.
                                 </p>
                             </div>
                         )}
@@ -111,8 +111,8 @@ export default function ChatWidget() {
 
                                 <div
                                     className={`p-3 rounded-2xl text-xs max-w-[80%] whitespace-pre-wrap leading-relaxed shadow-sm ${message.role === 'user'
-                                            ? 'bg-indigo-600 text-white rounded-br-none'
-                                            : 'bg-white text-slate-800 border border-slate-200/90 rounded-bl-none'
+                                        ? 'bg-indigo-600 text-white rounded-br-none'
+                                        : 'bg-white text-slate-800 border border-slate-200/90 rounded-bl-none'
                                         }`}
                                 >
                                     {message.parts.map((part, i) => {
@@ -147,7 +147,7 @@ export default function ChatWidget() {
                         <input
                             className="flex-1 text-xs bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-indigo-600 transition-all shadow-inner"
                             value={input}
-                            placeholder="Tulis pertanyaan..."
+                            placeholder="Write your question..."
                             onChange={(e) => setInput(e.currentTarget.value)}
                         />
                         <button

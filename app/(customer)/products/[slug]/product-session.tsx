@@ -16,6 +16,7 @@ import { getUserProductStatus } from '@/app/actions/review-actions';
 import type { Session } from "next-auth";
 import { toast } from 'sonner';
 import { getProductBySlug } from '@/lib/product';
+import { useQueryClient } from '@tanstack/react-query';
 
 
 // User Review
@@ -57,7 +58,7 @@ export default function ProductDetailPage({
     session,
     initialCart
 }: Props) {
-
+    const queryClient = useQueryClient()
     const userId = session?.user?.id;
     const router = useRouter();
 
@@ -113,6 +114,7 @@ export default function ProductDetailPage({
 
             const res = await addToCartDB(userId, product.id);
             if (res.success) {
+                await queryClient.invalidateQueries({ queryKey: ['cart'] });
                 router.push('/cart');
             } else {
                 toast.error(res.error || "Terjadi kesalahan");

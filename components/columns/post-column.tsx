@@ -14,7 +14,9 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore, useTransition } from "react";
+import { toast } from "sonner";
+import { deletePost } from "@/app/actions/post-actions";
 
 // Menyesuaikan tipe data dengan hasil mapping di PostsPage
 export type PostColumn = {
@@ -97,58 +99,78 @@ export const postColumns: ColumnDef<PostColumn>[] = [
     },
     {
         id: "actions",
-        cell: ({ row }) => {
-            const post = row.original;
-
-            return (
-                <DropdownMenu>
-                    <DropdownMenuTrigger render={
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                        </Button>}>
-
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuGroup>
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem
-                                onClick={() => navigator.clipboard.writeText(post.id)}
-                            >
-                                Copy post ID
-                            </DropdownMenuItem>
-                            {/* Tambahan opsional: Copy URL Blog */}
-                            <DropdownMenuItem
-                                onClick={() => navigator.clipboard.writeText(`https://domainkamu.com/blog/${post.slug}`)}
-                            >
-                                Copy article link
-                            </DropdownMenuItem>
-                        </DropdownMenuGroup>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuGroup>
-                            <Link href={`/dashboard/posts/${post.id}/edit`}>
-                                <DropdownMenuItem>
-                                    <Edit className="mr-2 h-4 w-4" /> Edit
-                                </DropdownMenuItem>
-                            </Link>
-                            <DropdownMenuItem className="text-red-600 focus:text-red-600">
-                                <Trash className="mr-2 h-4 w-4" /> Delete
-                            </DropdownMenuItem>
-                        </DropdownMenuGroup>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            );
-        },
+        cell: ({ row }) => <PostActionsCell post={row.original} />,
     },
 ];
 
+const PostActionsCell = ({ post }: { post: PostColumn }) => {
+    const [isPending, startTransition] = useTransition();
+
+    const handleDelete = () => {
+        if (confirm("Are you sure you want to delete this post?")) {
+            startTransition(async () => {
+                const result = await deletePost(post.id);
+                if (result.success) {
+                    toast.success("Post deleted successfully");
+                } else {
+                    toast.error(result.error || "Failed to delete post");
+                }
+            });
+        }
+    };
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger render={
+                <Button variant="ghost" className="h-8 w-8 p-0" disabled={isPending}>
+                    <span className="sr-only">Open menu</span>
+                    <MoreHorizontal className="h-4 w-4" />
+                </Button>}>
+
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuGroup>
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuItem
+                        onClick={() => navigator.clipboard.writeText(post.id)}
+                    >
+                        Copy post ID
+                    </DropdownMenuItem>
+                    {/* Tambahan opsional: Copy URL Blog */}
+                    <DropdownMenuItem
+                        onClick={() => navigator.clipboard.writeText(`https://domainkamu.com/blog/${post.slug}`)}
+                    >
+                        Copy article link
+                    </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                    <Link href={`/dashboard/posts/${post.id}/edit`}>
+                        <DropdownMenuItem>
+                            <Edit className="mr-2 h-4 w-4" /> Edit
+                        </DropdownMenuItem>
+                    </Link>
+                    <DropdownMenuItem className="text-red-600 focus:text-red-600 cursor-pointer" onClick={handleDelete} disabled={isPending}>
+                        <Trash className="mr-2 h-4 w-4" /> {isPending ? "Deleting..." : "Delete"}
+                    </DropdownMenuItem>
+                </DropdownMenuGroup>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+};
+
+const emptySubscribe = () => () => { };
+const useIsClient = () => {
+    return useSyncExternalStore(
+        emptySubscribe,
+        () => true,  // Nilai saat di Client
+        () => false  // Nilai saat di Server
+    );
+};
+
 // Komponen pembungkus untuk mencegah Hydration Error pada formatting Date
 const DateCell = ({ date }: { date: Date }) => {
-    const [isClient, setIsClient] = useState(false);
-
-    useEffect(() => {
-        setIsClient(true);
-    }, []);
+    const isClient = useIsClient();
 
     // Format tanggal: "26 Jul 2026"
     const formattedDate = new Intl.DateTimeFormat("en-US", {

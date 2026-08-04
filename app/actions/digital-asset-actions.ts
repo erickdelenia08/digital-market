@@ -8,7 +8,7 @@ import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
 
-export async function uploadAssetFile(base64File: string, prefix: string) {
+export async function uploadAssetFile(base64File: string, prefix: string, oldPath?: string | null) {
   try {
     if (!base64File.startsWith("data:")) {
       return { success: false, error: "Invalid file data" };
@@ -27,8 +27,18 @@ export async function uploadAssetFile(base64File: string, prefix: string) {
       else extension = mimeType.split("/")[1] || "bin";
     }
 
-    const fileName = `asset-${prefix}-${Date.now()}.${extension}`;
+    let fileName = `asset-${prefix}-${Date.now()}.${extension}`;
     const uploadDirName = "assets";
+    
+    if (oldPath && oldPath.startsWith(`/${uploadDirName}/`)) {
+      const oldFileName = oldPath.split("/").pop();
+      if (oldFileName) {
+        fileName = oldFileName;
+      }
+    } else if (oldPath) {
+      await deleteImage(oldPath);
+    }
+
     const uploadDir = join(process.cwd(), "public", uploadDirName);
     const filePath = join(uploadDir, fileName);
 

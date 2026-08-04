@@ -54,7 +54,7 @@ export const getOrderColumns = ({ onDelete, onUpdateStatus }: OrderColumnActions
         style: "currency",
         currency: "IDR",
       }).format(amount);
-      return <div>{formatted}</div>;
+      return <div suppressHydrationWarning>{formatted}</div>;
     },
   },
   {

@@ -42,12 +42,12 @@ function formatDate(dateInput: string | Date | null) {
     return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
 }
 
-export default function BlogClient({ 
-    initialPosts, 
+export default function BlogClient({
+    initialPosts,
     categories,
-    featuredPost 
-}: { 
-    initialPosts: PostWithRelations[], 
+    featuredPost
+}: {
+    initialPosts: PostWithRelations[],
     categories: { id: string, name: string, slug: string }[],
     featuredPost: PostWithRelations | null
 }) {
@@ -84,7 +84,7 @@ export default function BlogClient({
                                 Insights, Tutorials & <span className="text-indigo-600">Updates</span>
                             </h1>
                             <p className="text-slate-600 text-lg leading-relaxed">
-                                Artikel teknis, panduan pengoptimalan alur kerja, dan catatan rilis produk untuk membantu proses pengembangan aset digitalmu.
+                                Technical articles, workflow optimization guides, and product release notes to help with your digital asset development process.
                             </p>
                         </div>
 
@@ -209,7 +209,7 @@ export default function BlogClient({
                                                 href={`/blog/${featuredPost.slug}`}
                                                 className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-2.5 bg-slate-900 hover:bg-indigo-600 text-white font-semibold text-sm rounded-xl transition-all duration-200 shadow-sm"
                                             >
-                                                <span>Baca Artikel</span>
+                                                <span>Read Articles</span>
                                                 <ArrowRight className="w-4 h-4" />
                                             </Link>
                                         </div>
@@ -224,16 +224,16 @@ export default function BlogClient({
                         <div>
                             <div className="flex items-center justify-between mb-6">
                                 <h3 className="text-xl font-bold text-slate-900 tracking-tight">
-                                    Artikel Terbaru
+                                    Latest Articles
                                 </h3>
                                 <span className="text-xs font-semibold text-slate-500">
-                                    {filteredPosts.length} Artikel
+                                    {filteredPosts.length} Articles
                                 </span>
                             </div>
 
                             {filteredPosts.length === 0 ? (
                                 <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-300">
-                                    <p className="text-slate-500 text-sm">Tidak ada artikel yang cocok dengan pencarianmu.</p>
+                                    <p className="text-slate-500 text-sm">No articles match your search.</p>
                                 </div>
                             ) : (
                                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">

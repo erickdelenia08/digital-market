@@ -78,15 +78,16 @@ export async function getFeaturedProducts() {
 
 export async function searchProducts(query: string) {
     if (!query || query.trim().length < 2) return [];
-
+    const cleanQuery = query.trim();
     try {
         const products = await prisma.product.findMany({
             where: {
                 isPublished: true,
-                deletedAt: null, // 🟢 Pastikan tidak mengambil produk yang di-soft-delete
+                deletedAt: null,
                 OR: [
-                    { name: { contains: query } },        // 🟢 Hapus mode: "insensitive"
-                    { description: { contains: query } }, // 🟢 Hapus mode: "insensitive"
+                    { name: { contains: cleanQuery } },
+                    { description: { contains: cleanQuery } },
+                    { category: { name: { contains: cleanQuery } } },
                 ],
             },
             select: {

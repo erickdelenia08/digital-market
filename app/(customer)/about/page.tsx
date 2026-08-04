@@ -12,6 +12,31 @@ import {
   Globe,
   Award
 } from 'lucide-react';
+import { Metadata } from 'next';
+
+
+export const metadata: Metadata = {
+  title: "About Us", // Hasilnya: "About Us | Codegraph" (jika menggunakan title template di layout)
+  description: "Learn about CodeGraph's mission, values, and the creator behind high-quality digital assets, Canva templates, and productivity tools.",
+  keywords: [
+    "About CodeGraph",
+    "Digital assets creator",
+    "Canva templates developer",
+    "Excel tools creator",
+    "Codegraph mission"
+  ],
+  openGraph: {
+    title: "About Us | CodeGraph",
+    description: "Empowering creators with handcrafted digital assets, templates, and productivity tools.",
+    url: "/about",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "About Us | CodeGraph",
+    description: "Empowering creators with handcrafted digital assets, templates, and productivity tools.",
+  },
+};
 
 // Data Profil Single Contributor (Kamu)
 const founder = {
@@ -32,28 +57,28 @@ const values = [
   {
     icon: ShieldCheck,
     title: "Quality First",
-    description: "Setiap aset dikembangkan dengan standar ketat untuk memastikan fungsionalitas dan kerapian kode.",
+    description: "Each asset is developed with strict standards to ensure functionality and clean code.",
     iconBg: "bg-indigo-600",
     iconColor: "text-white"
   },
   {
     icon: Users,
     title: "Creator Focused",
-    description: "Fitur dan template dirancang khusus berdasarkan kebutuhan nyata alur kerja kreator modern.",
+    description: "Features and templates are designed specifically based on the real needs of modern creator workflows.",
     iconBg: "bg-cyan-500",
     iconColor: "text-slate-950"
   },
   {
     icon: HeartHandshake,
     title: "Integrity",
-    description: "Harga yang jujur, tanpa biaya tersembunyi, dan ketentuan lisensi yang transparan.",
+    description: "Fair prices, no hidden fees, and transparent licensing terms.",
     iconBg: "bg-indigo-600",
     iconColor: "text-white"
   },
   {
     icon: Zap,
     title: "Maximum Speed",
-    description: "Solusi siap pakai yang memotong waktu pengerjaan project hingga berkali-kali lipat.",
+    description: "Ready-to-use solutions that cut project completion time many times over.",
     iconBg: "bg-amber-500",
     iconColor: "text-slate-950"
   }
@@ -82,7 +107,7 @@ const AboutPage = () => {
               </h1>
 
               <p className="text-lg sm:text-xl text-slate-600 leading-relaxed font-normal max-w-2xl mx-auto">
-                Platform mandiri yang menyediakan aset digital berkualitas tinggi untuk mempercepat proses kreatif kamu.
+                A self-platform that provides high-quality digital assets to accelerate your creative process.
               </p>
             </div>
 
@@ -171,12 +196,12 @@ const AboutPage = () => {
                     Our Mission
                   </span>
                   <h2 className="mt-4 text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-                    Fokus Pada Kualitas & Efisiensi Kerja
+                    Focus on Quality & Work Efficiency
                   </h2>
                 </div>
 
                 <p className="text-slate-600 leading-relaxed text-base sm:text-lg">
-                  CodeGraph dibangun untuk memangkas kerumitan teknis yang sering dihadapi oleh para kreator. Tanpa alur kerja yang berbelit-belit, setiap aset dirancang agar dapat langsung diterapkan dalam project kamu.
+                  CodeGraph is built to streamline the technical complexities often faced by creators. Without complicated workflows, each asset is designed to be directly implemented in your project.
                 </p>
 
                 <div className="grid sm:grid-cols-2 gap-3 pt-2">
@@ -197,7 +222,7 @@ const AboutPage = () => {
                 <div className="p-5 bg-slate-100/80 rounded-xl border border-slate-200 shadow-inner">
                   <h3 className="font-bold text-slate-900 text-sm mb-1">Our Vision</h3>
                   <p className="text-slate-600 italic text-sm">
-                    &ldquo;Menjadi ekosistem aset digital independen terpercaya yang mempermudah siapapun untuk berkarya.&rdquo;
+                    &ldquo; To be a trusted independent digital asset ecosystem that makes it easier for anyone to create.&rdquo;
                   </p>
                 </div>
 
@@ -271,7 +296,7 @@ const AboutPage = () => {
                 Ready to Upgrade Your Workflows?
               </h2>
               <p className="text-slate-600 text-base sm:text-lg">
-                Temukan berbagai pilihan aset digital berkualitas yang dirancang untuk mendukung kebutuhan project kamu.
+                Discover a variety of high-quality digital assets designed to support your project needs.
               </p>
 
               <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">

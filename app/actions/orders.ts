@@ -50,7 +50,7 @@ export async function getCheckoutOrder(
   }
 
   return {
-    order
+    order: JSON.parse(JSON.stringify(order)),
   };
 }
 

@@ -66,7 +66,7 @@ Create a `.env` file in the root directory and configure the following:
 
 ```env
 # App
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
+NEXT_PUBLIC_SITE_URL="http://localhost:3000"
 NEXT_PUBLIC_APP_NAME="Acme Inc"
 
 # Database

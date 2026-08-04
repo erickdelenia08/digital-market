@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { postSchema, PostInput } from "@/schemas/post-schema";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { getAuthUser } from "@/lib/auth-user";
 
 export async function createPost(data: PostInput) {
@@ -31,6 +31,10 @@ export async function createPost(data: PostInput) {
     });
 
     revalidatePath("/dashboard/posts");
+    updateTag("blog-categories")
+    updateTag("blog-posts")
+    updateTag("latest-blogs")
+
     return { success: true, data: post };
   } catch (error: any) {
     console.error("Failed to create post:", error);
@@ -62,9 +66,12 @@ export async function updatePost(id: string, data: PostInput) {
         }
       },
     });
-
     revalidatePath("/dashboard/posts");
     revalidatePath(`/dashboard/posts/${id}/edit`);
+    updateTag("blog-categories")
+    updateTag("blog-posts")
+    updateTag("latest-blogs")
+
     return { success: true, data: post };
   } catch (error: any) {
     console.error("Failed to update post:", error);
@@ -119,5 +126,23 @@ export async function createPostTag(data: { name: string, slug: string }) {
     return { success: true, data: tag };
   } catch (error: any) {
     return { success: false, error: error.message };
+  }
+}
+
+export async function deletePost(id: string) {
+  try {
+    await getAuthUser(); // Verify auth
+    await prisma.post.delete({
+      where: { id },
+    });
+
+    revalidatePath("/dashboard/posts");
+    updateTag("blog-posts");
+    updateTag("latest-blogs");
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("Failed to delete post:", error);
+    return { success: false, error: error.message || "Failed to delete post" };
   }
 }

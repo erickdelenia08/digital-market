@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -27,11 +26,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { 
-  createUserSchema, 
-  updateUserSchema, 
-  CreateUserInput, 
-  UpdateUserInput 
+import {
+  createUserSchema,
+  updateUserSchema,
+  CreateUserInput,
+  UpdateUserInput
 } from "@/schemas/user-schema";
 import { createUser, updateUser } from "@/app/actions/user-actions";
 
@@ -48,12 +47,12 @@ export function UserForm({ initialData }: UserFormProps = {}) {
 
   const form = useForm<UpdateUserInput>({
     resolver: zodResolver(schema) as unknown as Resolver<UpdateUserInput>,
-    defaultValues: initialData || {
-      name: "",
-      email: "",
+    defaultValues: {
+      name: initialData?.name ?? "",
+      email: initialData?.email ?? "",
       password: "",
-      role: "USER",
-    },
+      role: initialData?.role ?? "USER",
+    }
   });
 
   async function onSubmit(data: UpdateUserInput) {
@@ -90,7 +89,7 @@ export function UserForm({ initialData }: UserFormProps = {}) {
               <FormItem>
                 <FormLabel>Full Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="John Doe" {...field} />
+                  <Input placeholder="John Doe" {...field} value={field.value ?? ""} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -104,7 +103,7 @@ export function UserForm({ initialData }: UserFormProps = {}) {
               <FormItem>
                 <FormLabel>Email Address</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="john@example.com" {...field} />
+                  <Input type="email" placeholder="john@example.com" {...field} value={field.value ?? ""} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -118,7 +117,7 @@ export function UserForm({ initialData }: UserFormProps = {}) {
               <FormItem>
                 <FormLabel>Password {initialData && "(Optional)"}</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="********" {...field} />
+                  <Input type="password" placeholder="********" {...field} value={field.value ?? ""} />
                 </FormControl>
                 {initialData && (
                   <FormDescription>
@@ -136,7 +135,7 @@ export function UserForm({ initialData }: UserFormProps = {}) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Role</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select a role" />

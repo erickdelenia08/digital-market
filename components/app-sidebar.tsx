@@ -17,13 +17,13 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { ArrowLeftRight, LayoutDashboardIcon, ListIcon, NotebookPen, Settings2Icon, UsersRound } from "lucide-react"
+import { ArrowLeftRight, LayoutDashboardIcon, ListIcon, NotebookPen, Settings2Icon, UsersRound, Code2 } from "lucide-react"
 import { Logo } from "@/components/logo"
 import { useSession } from "next-auth/react"
 
 function SidebarLogo() {
   const { state } = useSidebar()
-  return <Logo size="sm" label="Acme Inc." withText={false} iconOnly={state === "collapsed"} />
+  return <Logo size="sm" label="CodeGraph" icon={<Code2 className="text-indigo-600 size-6" />} withText={state !== "collapsed"} iconOnly={state === "collapsed"} />
 }
 
 const data = {

@@ -12,8 +12,8 @@ import { existsSync } from "fs"
  * @returns The relative path of the uploaded image.
  */
 export async function uploadImage(
-  base64: string, 
-  userId: string, 
+  base64: string,
+  userId: string,
   oldPath?: string | null,
   uploadDirName: string = "uploads"
 ): Promise<string> {
@@ -25,13 +25,25 @@ export async function uploadImage(
   try {
     const base64Data = base64.split(",")[1]
     const buffer = Buffer.from(base64Data, "base64")
-    
+
     // Determine extension from mime type
     const mimeType = base64.split(";")[0].split(":")[1]
     const extension = mimeType.split("/")[1] || "png"
-    
-    const fileName = `${userId}-${Date.now()}.${extension}`
+
+    let fileName = `${userId}-${Date.now()}.${extension}`
     const uploadDir = join(process.cwd(), "public", uploadDirName)
+
+    // If oldPath is provided and it is in the same directory, reuse its filename to overwrite
+    if (oldPath && oldPath.startsWith(`/${uploadDirName}/`)) {
+      const oldFileName = oldPath.split("/").pop()
+      if (oldFileName) {
+        fileName = oldFileName
+      }
+    } else if (oldPath) {
+      // If it's from a different directory, delete the old one
+      await deleteImage(oldPath)
+    }
+
     const filePath = join(uploadDir, fileName)
 
     // Create directory if it doesn't exist
@@ -39,14 +51,10 @@ export async function uploadImage(
       await mkdir(uploadDir, { recursive: true })
     }
 
-    // Cleanup old image if provided
-    if (oldPath) {
-      await deleteImage(oldPath)
-    }
-
     await writeFile(filePath, buffer)
     return `/${uploadDirName}/${fileName}`
-  } catch {
+  } catch (error) {
+    console.error("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC Detail Error Upload:", error);
     throw new Error("Failed to upload image")
   }
 }

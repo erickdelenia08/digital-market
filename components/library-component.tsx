@@ -38,19 +38,10 @@ export interface LibraryProduct {
     }[];
 }
 
-const CATEGORY_OPTIONS = [
-    { value: "ALL", label: "Semua Kategori" },
-    { value: "CANVA", label: "Canva Templates" },
-    { value: "CAPCUT", label: "CapCut Presets" },
-    { value: "FILE", label: "Master Files" },
-    { value: "Social Media", label: "Social Media Kits" },
-    { value: "Finance & Biz", label: "Finance & Biz Tools" }
-];
-
 const SORT_OPTIONS = [
-    { value: "NEWEST", label: "Terbaru" },
-    { value: "OLDEST", label: "Terlama" },
-    { value: "AZ", label: "Nama: A - Z" }
+    { value: "NEWEST", label: "Newest" },
+    { value: "OLDEST", label: "Oldest" },
+    { value: "AZ", label: "Name: A - Z" }
 ];
 
 
@@ -59,6 +50,29 @@ export default function ScalableLibraryComponent({ initialProducts }: { initialP
     const [selectedCategory, setSelectedCategory] = useState("ALL");
     const [selectedTag, setSelectedTag] = useState<string | null>(null);
     const [sortBy, setSortBy] = useState("NEWEST");
+
+    const categoryOptions = useMemo(() => {
+        // Mengambil nilai category & type dari setiap produk user
+        const rawCategories = initialProducts.flatMap(item => [item.category, item.type]);
+
+        // Menyaring nilai null/undefined/kosong dan mengambil nilai unik
+        const uniqueCategories = Array.from(
+            new Set(rawCategories.filter((cat): cat is string => Boolean(cat)))
+        );
+
+        // Format menjadi array of object { value, label }
+        const dynamicOptions = uniqueCategories.map(cat => ({
+            value: cat,
+            label: cat
+        }));
+
+        // Selalu sertakan pilihan "All Categories" di paling atas
+        return [
+            { value: "ALL", label: "All Categories" },
+            ...dynamicOptions
+        ];
+    }, [initialProducts]);
+
 
     // Modal state
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -69,8 +83,8 @@ export default function ScalableLibraryComponent({ initialProducts }: { initialP
     const [isSortOpen, setIsSortOpen] = useState(false);
 
     // Get active labels for premium layout display
-    const currentCategoryLabel = CATEGORY_OPTIONS.find(c => c.value === selectedCategory)?.label || "Semua Kategori";
-    const currentSortLabel = SORT_OPTIONS.find(s => s.value === sortBy)?.label || "Terbaru";
+    const currentCategoryLabel = categoryOptions.find(c => c.value === selectedCategory)?.label || "All Categories";
+    const currentSortLabel = SORT_OPTIONS.find(s => s.value === sortBy)?.label || "Newest";
 
     // Filter & Sort Logic
     const filteredProducts = useMemo(() => {
@@ -117,15 +131,15 @@ export default function ScalableLibraryComponent({ initialProducts }: { initialP
                             </h1>
                         </div>
                         <p className="text-sm font-medium text-slate-500">
-                            Akses dan kelola seluruh lisensi aset digital premium yang sudah Anda amankan.
+                            Access and manage all premium digital asset licenses you have secured.
                         </p>
                     </div>
 
                     {/* Stats Embossed Pill */}
                     <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm w-fit">
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Aset</span>
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Assets</span>
                         <span className="text-xs font-black bg-accent-indigo/5 text-accent-indigo border border-accent-indigo/10 px-2.5 py-0.5 rounded-lg shadow-inner">
-                            {initialProducts.length} Item
+                            {initialProducts.length} Assets
                         </span>
                     </div>
                 </div>
@@ -138,7 +152,7 @@ export default function ScalableLibraryComponent({ initialProducts }: { initialP
                         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-accent-indigo transition-colors duration-200" />
                         <input
                             type="text"
-                            placeholder="Cari judul aset digital Anda..."
+                            placeholder="Search your digital assets..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 placeholder:text-slate-400 focus:border-accent-indigo focus:ring-4 focus:ring-accent-indigo/10 outline-none transition-all duration-200 shadow-sm"
@@ -166,7 +180,7 @@ export default function ScalableLibraryComponent({ initialProducts }: { initialP
                                     transition={{ duration: 0.12 }}
                                     className="absolute left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-slate-100 p-1.5 z-40 max-h-60 overflow-y-auto"
                                 >
-                                    {CATEGORY_OPTIONS.map((cat) => {
+                                    {categoryOptions.map((cat) => {
                                         const isSelected = selectedCategory === cat.value;
                                         return (
                                             <button
@@ -254,9 +268,9 @@ export default function ScalableLibraryComponent({ initialProducts }: { initialP
                                         <Layers className="w-8 h-8 stroke-[1.5]" />
                                     </div>
                                 </div>
-                                <h3 className="text-base font-bold text-primary-900 mb-1">Aset tidak ditemukan</h3>
+                                <h3 className="text-base font-bold text-primary-900 mb-1">Asset not found</h3>
                                 <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
-                                    Silakan periksa kata kunci pencarian Anda atau reset filter untuk menampilkan semua item.
+                                    Please check your search keywords or reset filters to display all items.
                                 </p>
                             </motion.div>
                         ) : (

@@ -9,7 +9,8 @@ export const postCategorySchema = z.object({
 export const postTagSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1, "Name is required"),
-  slug: z.string().min(1, "Slug is required"),
+  // slug: z.string().min(1, "Slug is required"),
+  slug: z.string().optional()
 });
 
 export const postSchema = z.object({

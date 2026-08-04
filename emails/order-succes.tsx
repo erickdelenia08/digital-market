@@ -13,22 +13,26 @@ import {
     Tailwind,
 } from "react-email";
 
-interface WelcomeEmailProps {
-    userFirstName: string;
-    loginUrl: string;
+interface OrderSuccessEmailProps {
+    customerName: string;
+    orderId: string;
+    totalAmount: string;
+    downloadUrl: string; // Direct link ke halaman download/library user
 }
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ? process.env.NEXT_PUBLIC_SITE_URL : "";
 const appName = process.env.NEXT_PUBLIC_APP_NAME || "CodeGraph";
 
-export const WelcomeEmail = ({
-    userFirstName,
-    loginUrl,
-}: WelcomeEmailProps) => {
+export const OrderSuccessEmail = ({
+    customerName,
+    orderId,
+    totalAmount,
+    downloadUrl,
+}: OrderSuccessEmailProps) => {
     return (
         <Html>
             <Head />
-            <Preview>Welcome to {appName}! Explore premium digital assets, templates, and presets.</Preview>
+            <Preview>Payment Confirmed! Access your digital assets for Order #{orderId}</Preview>
             <Tailwind>
                 <Body className="bg-[#f6f9fc] font-sans">
                     <Container className="bg-white mx-auto py-10 px-5 mb-16 rounded-lg max-w-[480px] shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
@@ -41,32 +45,37 @@ export const WelcomeEmail = ({
                         />
 
                         <Heading className="text-[#1a1a1a] text-[22px] font-semibold text-center my-[30px]">
-                            Welcome to {appName}, {userFirstName}! 👋
+                            Payment Successful! 🎉
                         </Heading>
 
                         <Text className="text-[#444] text-[15px] leading-[24px]">
-                            We’re thrilled to have you here! You&apos;ve joined a marketplace built to supercharge your creative workflow with high-quality digital products, Canva templates, After Effects presets, and more.
+                            Hi {customerName},
                         </Text>
 
                         <Text className="text-[#444] text-[15px] leading-[24px]">
-                            Log in to your account now to start exploring our collection and level up your next project:
+                            Thank you for your purchase. We have successfully received your payment for order <strong>#{orderId}</strong> (Total: <strong>{totalAmount}</strong>).
                         </Text>
 
+                        <Text className="text-[#444] text-[15px] leading-[24px]">
+                            Your digital assets are ready! You can view and download your files directly from your library page on our website:
+                        </Text>
+
+                        {/* Button Mengarah Langsung ke Halaman Library/Downloads */}
                         <Section className="text-center my-[30px]">
                             <Button
                                 className="bg-black rounded-md text-white text-[14px] font-semibold no-underline text-center inline-block px-8 py-3"
-                                href={loginUrl}
+                                href={downloadUrl}
                             >
-                                Explore Marketplace
+                                Go to Downloads Page
                             </Button>
                         </Section>
 
                         <Text className="text-[#444] text-[15px] leading-[24px]">
-                            If you have any questions or need help finding the right assets, feel free to reply to this email. Our team is always happy to assist!
+                            If you encounter any issues accessing your files or have questions about your assets, please feel free to reach out to our support team.
                         </Text>
 
                         <Text className="text-[#444] text-[15px] leading-[24px]">
-                            Happy creating,<br />
+                            Best regards,<br />
                             <strong>{appName} Team</strong>
                         </Text>
 
@@ -83,4 +92,4 @@ export const WelcomeEmail = ({
     );
 };
 
-export default WelcomeEmail;
+export default OrderSuccessEmail;

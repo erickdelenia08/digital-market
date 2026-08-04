@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { useCartStore } from '@/store/useCartStore';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { QRCodeSVG } from 'qrcode.react';
@@ -17,10 +16,11 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import { createPayment } from '@/app/actions/payment/create-payment';
-import { formatCountdown, formatTimeLeft } from '@/helper/payment-timer';
+import { formatCountdown } from '@/helper/payment-timer';
 import { checkOrderStatus } from '@/app/actions/payment';
 import { getCheckoutOrder } from "@/app/actions/orders";
 import { cancelPayment } from '@/app/actions/payment/cancel-payment';
+import { useQueryClient } from '@tanstack/react-query';
 
 
 type CheckoutResponse = Awaited<ReturnType<typeof getCheckoutOrder>>;
@@ -59,6 +59,8 @@ interface PaymentData {
 const CheckoutPage = ({ order }: CheckoutPageProps) => {
     // console.log("PAYMENT DATAAAAAAAAAAAAAAA");
     // console.log(order);
+    const queryClient = useQueryClient();
+
     const latestPayment = order.payments[0];
 
     const [step, setStep] = useState(() => {
@@ -169,13 +171,14 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
 
             if (res.isPaid) {
                 clearInterval(interval); // Hentikan polling
+                queryClient.invalidateQueries({ queryKey: ['cart'] });
                 setStep(3); // Transisi otomatis ke Step Success
-                toast.success("Pembayaran berhasil diverifikasi!");
+                toast.success("Payment verification successful!");
             }
         }, 4000); // Polling tiap 4 detik
 
         return () => clearInterval(interval);
-    }, [step, paymentData?.orderId, isExpired]);
+    }, [step, paymentData?.orderId, isExpired, queryClient]);
 
     const handleCancelAndChangeMethod = async () => {
         // 💡 Gunakan paymentData, fallback ke latestPayment
@@ -184,7 +187,7 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
         console.log("ini payment ID yang mau dibatalkan:", currentPaymentId);
 
         if (!currentPaymentId) {
-            toast.error("Tidak ada pembayaran aktif yang bisa dibatalkan.");
+            toast.error("No active payment found to cancel.");
             return;
         }
 
@@ -207,10 +210,10 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
 
             // 3. Kembalikan ke Step 1
             setStep(1);
-            toast.success("Pembayaran berhasil dibatalkan, silakan pilih metode lain.");
+            toast.success("Payment cancellation successful, please select another payment method.");
         } catch (err) {
             console.error(err);
-            toast.error("Gagal membatalkan pembayaran.");
+            toast.error("Payment cancellation failed.");
         } finally {
             setCancelling(false);
         }
@@ -219,7 +222,7 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
     // Handler Request Payment ke Backend Xendit Payment Request V2 API
     const handleCreatePayment = async () => {
         if (!method) {
-            toast.error('Silakan pilih metode pembayaran terlebih dahulu!');
+            toast.error('Please select a payment method first!');
             return;
         }
 
@@ -252,7 +255,7 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
                         // Jika tagihan sudah kedaluwarsa dari waktu server
                         setTimeLeft(0);
                         setIsExpired(true);
-                        toast.error("Waktu pembayaran untuk tagihan ini telah berakhir.");
+                        toast.error("Payment time for this invoice has expired.");
                     }
                 } else {
                     // Jika tidak ada expiresAt dari server, jalankan countdown bawaan 15 menit
@@ -263,13 +266,13 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
                 setStep(2); // Pindah ke Step Instruksi Pembayaran
 
                 if (!isExpired) {
-                    toast.success('Instruksi pembayaran berhasil dibuat!');
+                    toast.success('Payment instructions created successfully!');
                 }
             }
 
         } catch (error) {
             console.error(error);
-            toast.error('Koneksi bermasalah. Silakan coba lagi.');
+            toast.error('Connection issue. Please try again.');
         } finally {
             setLoadingPayment(false);
         }
@@ -279,7 +282,7 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
     const handleCopy = (text: string) => {
         navigator.clipboard.writeText(text);
         setCopied(true);
-        toast.success("Nomor Virtual Account tersalin ke clipboard!");
+        toast.success("Virtual Account Number copied to clipboard!");
         setTimeout(() => setCopied(false), 2000);
     };
 
@@ -309,7 +312,7 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
             document.body.appendChild(downloadLink);
             downloadLink.click();
             document.body.removeChild(downloadLink);
-            toast.success("Gambar QRIS berhasil diunduh!");
+            toast.success("QRIS image downloaded successfully!");
         };
 
         img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
@@ -330,7 +333,7 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
         );
     }
 
-    // Guard Clause: Harus Login Terlebih Dahulu
+    // Guard Clause: Must Login First
     if (!session) {
         return (
             <div className="min-h-screen bg-slate-50/50 flex items-center justify-center py-12 px-4">
@@ -345,13 +348,13 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
                         </div>
                     </div>
                     <div className="space-y-1.5">
-                        <h2 className="text-xl font-bold text-slate-900 tracking-tight">Login Diperlukan</h2>
+                        <h2 className="text-xl font-bold text-slate-900 tracking-tight">Login Required</h2>
                         <p className="text-sm text-slate-500 leading-relaxed max-w-sm mx-auto">
-                            Silakan login ke akun Anda untuk menyelesaikan transaksi dan mendapatkan akses otomatis ke perpustakaan produk digital.
+                            Please log in to your account to complete the transaction and get automatic access to the digital product library.
                         </p>
                     </div>
                     <Link href="/login?callbackUrl=/checkout" className="w-full h-12 flex items-center justify-center text-sm font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/20 transition-all">
-                        Log In ke Akun Saya
+                        Log In to My Account
                     </Link>
                 </motion.div>
             </div>
@@ -368,12 +371,12 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
                 <div className="mb-8 space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div>
-                            <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Checkout Pembayaran</h1>
-                            <p className="text-sm text-slate-500">Selesaikan transaksi produk digital menggunakan Xendit Payment Request V2.</p>
+                            <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Checkout Payment</h1>
+                            <p className="text-sm text-slate-500">Complete your digital product transaction using Xendit Payment Request V2.</p>
                         </div>
                         <div className="flex items-center gap-2 text-xs font-semibold bg-white border border-slate-200 px-3 py-1.5 rounded-xl shadow-xs self-start sm:self-auto">
                             <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                            <span className="text-slate-700">Enkripsi SSL Xendit 256-bit</span>
+                            <span className="text-slate-700">Xendit 256-bit SSL Encryption</span>
                         </div>
                     </div>
 
@@ -382,15 +385,15 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
                         <div className="flex items-center justify-between text-xs font-bold text-slate-500 mb-2 px-1">
                             <span className={step >= 1 ? 'text-indigo-600 flex items-center gap-1.5' : ''}>
                                 <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step >= 1 ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-600'}`}>1</span>
-                                Pilih Metode
+                                Select Method
                             </span>
                             <span className={step >= 2 ? 'text-indigo-600 flex items-center gap-1.5' : ''}>
                                 <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step >= 2 ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-600'}`}>2</span>
-                                Bayar
+                                Pay
                             </span>
                             <span className={step === 3 ? 'text-emerald-600 flex items-center gap-1.5' : ''}>
                                 <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step === 3 ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'}`}>3</span>
-                                Akses Produk
+                                Access Product
                             </span>
                         </div>
                         <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
@@ -415,7 +418,7 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
                                 <CardHeader className="pb-4 border-b border-slate-100">
                                     <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
                                         <CreditCard className="w-5 h-5 text-indigo-600" />
-                                        <span>Pilih Metode Pembayaran Xendit</span>
+                                        <span>Select Payment Method</span>
                                     </CardTitle>
                                 </CardHeader>
 
@@ -436,7 +439,7 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
                                                 }`}
                                         >
                                             <div>
-                                                <span className="font-bold text-slate-900 text-sm block">QRIS (Scan Serbaguna)</span>
+                                                <span className="font-bold text-slate-900 text-sm block">QRIS (Universal Scan)</span>
                                                 <span className="text-xs text-slate-500 block mt-0.5">
                                                     BCA Mobile, Livin Mandiri, GoPay, OVO, DANA, ShopeePay, LinkAja
                                                 </span>
@@ -506,7 +509,7 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
                                                 >
                                                     <div>
                                                         <span className="font-bold text-slate-900 text-sm block">{bank.name}</span>
-                                                        <span className="text-[11px] text-slate-400 font-mono">Verifikasi Otomatis</span>
+                                                        <span className="text-[11px] text-slate-400 font-mono">Automatic Verification</span>
                                                     </div>
                                                     <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${method === bank.id ? 'border-indigo-600 bg-indigo-600' : 'border-slate-300'}`}>
                                                         {method === bank.id && <span className="w-1.5 h-1.5 rounded-full bg-white"></span>}
@@ -526,11 +529,11 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
                                         {loadingPayment ? (
                                             <>
                                                 <RefreshCw className="w-4 h-4 animate-spin" />
-                                                <span>Membuat Payment Request Xendit...</span>
+                                                <span>Creating Payment Request Xendit...</span>
                                             </>
                                         ) : (
                                             <>
-                                                <span>Lanjut ke Instruksi Pembayaran</span>
+                                                <span>Continue to Payment Instructions</span>
                                                 <ChevronRight className="w-4 h-4" />
                                             </>
                                         )}
@@ -546,7 +549,7 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
                             <Card className="border-slate-200/80 bg-white rounded-2xl shadow-md shadow-slate-200/40 overflow-hidden">
                                 <CardHeader className="pb-4 border-b border-slate-100 flex flex-row items-center justify-between">
                                     <CardTitle className="text-base font-bold text-slate-900">
-                                        Instruksi Pembayaran Xendit
+                                        Payment Instructions Xendit
                                     </CardTitle>
                                     <span className="bg-indigo-50 text-indigo-700 text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
                                         {method.toUpperCase()}
@@ -564,10 +567,10 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
                                             <Clock className={`w-5 h-5 ${!isExpired && 'animate-pulse text-amber-600'}`} />
                                             <div>
                                                 <span className="text-xs font-bold block">
-                                                    {isExpired ? 'Waktu Pembayaran Habis' : 'Batas Waktu Pembayaran'}
+                                                    {isExpired ? 'Payment Time Expired' : 'Payment Time Limit'}
                                                 </span>
                                                 <span className="text-[11px] text-slate-600">
-                                                    {isExpired ? 'Kode pembayaran telah kedaluwarsa.' : 'Selesaikan transaksi sebelum timer berakhir.'}
+                                                    {isExpired ? 'Payment code has expired.' : 'Complete the transaction before the timer ends.'}
                                                 </span>
                                             </div>
                                         </div>
@@ -580,14 +583,14 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
                                         <div className="text-center py-8 space-y-4">
                                             <AlertCircle className="w-12 h-12 text-rose-500 mx-auto" />
                                             <p className="text-sm text-slate-600">
-                                                Kode pembayaran ini sudah kadaluarsa. Silakan buat ulang transaksi baru.
+                                                Payment code has expired. Please create a new transaction.
                                             </p>
                                             <button
                                                 type="button"
                                                 onClick={() => setStep(1)}
                                                 className="bg-indigo-600 text-white text-xs font-bold px-5 py-3 rounded-xl hover:bg-indigo-700 transition"
                                             >
-                                                Buat Ulang Pembayaran
+                                                Create New Payment
                                             </button>
                                         </div>
                                     ) : (
@@ -611,7 +614,7 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
                                                         className="flex items-center gap-2 text-xs font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-4 py-2.5 rounded-xl border border-indigo-100 transition cursor-pointer"
                                                     >
                                                         <Download className="w-4 h-4" />
-                                                        <span>Simpan / Download Gambar QRIS</span>
+                                                        <span>Save / Download QRIS Image</span>
                                                     </button>
                                                 </div>
                                             )}
@@ -620,7 +623,7 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
                                             {['gopay', 'shopeepay', 'dana', 'ovo'].includes(method) && paymentData.deeplinkUrl && (
                                                 <div className="text-center space-y-4 py-4 bg-slate-50 p-6 rounded-2xl border border-slate-200/60">
                                                     <p className="text-xs text-slate-600 font-medium">
-                                                        Klik tombol di bawah ini untuk membuka dan menyelesaikan pembayaran di aplikasi {method.toUpperCase()}:
+                                                        Click the button below to open and complete the payment in the {method.toUpperCase()} application:
                                                     </p>
                                                     <a
                                                         href={paymentData.deeplinkUrl}
@@ -628,7 +631,7 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
                                                         rel="noreferrer"
                                                         className="w-full inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl transition shadow-lg shadow-emerald-600/20 text-sm"
                                                     >
-                                                        <span>Buka Aplikasi {method.toUpperCase()}</span>
+                                                        <span>Open {method.toUpperCase()} App</span>
                                                         <ExternalLink className="w-4 h-4" />
                                                     </a>
                                                 </div>
@@ -638,7 +641,7 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
                                             {['bca', 'bni', 'bri', 'mandiri', 'permata'].includes(method) && paymentData.accountNumber && (
                                                 <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200/80 space-y-2">
                                                     <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
-                                                        Nomor Virtual Account {method.toUpperCase()}
+                                                        Virtual Account Number {method.toUpperCase()}
                                                     </span>
                                                     <div className="flex items-center justify-between">
                                                         <span className="text-2xl font-mono font-black text-slate-900 tracking-wider">
@@ -650,7 +653,7 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
                                                             className="flex items-center gap-1.5 bg-white text-xs font-bold px-3.5 py-2 rounded-xl border border-slate-200 hover:bg-slate-100 transition text-slate-700 cursor-pointer shadow-xs"
                                                         >
                                                             {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-                                                            {copied ? 'Tersalin' : 'Salin Nomor'}
+                                                            {copied ? 'Copied' : 'Copy Number'}
                                                         </button>
                                                     </div>
                                                 </div>
@@ -659,12 +662,12 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
                                             {/* Real-time Polling Status Indicator */}
                                             <div className="flex items-center justify-center gap-2.5 text-xs text-slate-500 py-1 bg-slate-50 rounded-xl p-3 border border-slate-100">
                                                 <RefreshCw className="w-4 h-4 animate-spin text-indigo-600" />
-                                                <span>Menunggu verifikasi pembayaran otomatis dari Xendit Webhook...</span>
+                                                <span>Waiting for automatic payment verification from Xendit Webhook...</span>
                                             </div>
 
                                             {/* ACCORDION CARA PEMBAYARAN */}
                                             <div className="border-t border-slate-100 pt-4 space-y-2">
-                                                <p className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">Panduan Pembayaran:</p>
+                                                <p className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">Payment Guide:</p>
 
                                                 <div className="border border-slate-200 rounded-xl overflow-hidden text-xs">
                                                     <button
@@ -674,10 +677,10 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
                                                     >
                                                         <span>
                                                             {method === 'qris'
-                                                                ? 'Cara Transfer via QRIS'
+                                                                ? 'How to Transfer via QRIS'
                                                                 : ['bca', 'bni', 'bri', 'mandiri', 'permata'].includes(method)
-                                                                    ? `Cara Transfer via Virtual Account ${method.toUpperCase()}`
-                                                                    : `Cara Bayar via ${method.toUpperCase()}`}
+                                                                    ? `How to Transfer via Virtual Account ${method.toUpperCase()}`
+                                                                    : `How to Pay via ${method.toUpperCase()}`}
                                                         </span>
                                                         {openAccordion === 1 ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                                                     </button>
@@ -685,23 +688,23 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
                                                         <div className="p-4 bg-white text-slate-600 space-y-2 border-t border-slate-100 leading-relaxed">
                                                             {method === 'qris' ? (
                                                                 <ol className="list-decimal list-inside space-y-1.5">
-                                                                    <li>Buka aplikasi Mobile Banking atau E-Wallet favorit Anda.</li>
-                                                                    <li>Pilih menu **Scan QR / QRIS**.</li>
-                                                                    <li>Arahkan kamera ke QR Code di atas (atau unggah hasil tangkapan layar/download QR).</li>
-                                                                    <li>Periksa nominal tagihan **Rp {order.totalAmount.toLocaleString('id-ID')}** dan selesaikan transaksi dengan PIN Anda.</li>
+                                                                    <li>Open your favorite Mobile Banking or E-Wallet application.</li>
+                                                                    <li>Select the **Scan QR / QRIS** menu.</li>
+                                                                    <li>Point your camera at the QR Code above (or upload the screenshot/downloaded QR).</li>
+                                                                    <li>Check the bill amount **Rp {order.totalAmount.toLocaleString('id-ID')}** and complete the transaction with your PIN.</li>
                                                                 </ol>
                                                             ) : ['bca', 'bni', 'bri', 'mandiri', 'permata'].includes(method) ? (
                                                                 <ol className="list-decimal list-inside space-y-1.5">
-                                                                    <li>Buka aplikasi Mobile Banking ({method.toUpperCase()}) Anda.</li>
-                                                                    <li>Pilih menu **Transfer / Pembayaran** &gt; **Virtual Account**.</li>
-                                                                    <li>Masukkan nomor Virtual Account: <strong className="font-mono text-slate-900">{paymentData.accountNumber}</strong>.</li>
-                                                                    <li>Konfirmasi nama penerima dan nominal tagihan. Masukkan PIN transaksi Anda.</li>
+                                                                    <li>Open your Mobile Banking application ({method.toUpperCase()}).</li>
+                                                                    <li>Select the **Transfer / Payment** &gt; **Virtual Account** menu.</li>
+                                                                    <li>Enter the Virtual Account number: <strong className="font-mono text-slate-900">{paymentData.accountNumber}</strong>.</li>
+                                                                    <li>Confirm the recipient&apos;s name and bill amount. Enter your transaction PIN.</li>
                                                                 </ol>
                                                             ) : (
                                                                 <ol className="list-decimal list-inside space-y-1.5">
-                                                                    <li>Klik tombol **Buka Aplikasi {method.toUpperCase()}** di atas.</li>
-                                                                    <li>Anda akan diarahkan ke aplikasi {method.toUpperCase()} di perangkat Anda.</li>
-                                                                    <li>Periksa rincian pembayaran dan selesaikan transaksi dengan PIN {method.toUpperCase()} Anda.</li>
+                                                                    <li>Click the **Open {method.toUpperCase()} Application** button above.</li>
+                                                                    <li>You will be redirected to the {method.toUpperCase()} application on your device.</li>
+                                                                    <li>Check the payment details and complete the transaction with your {method.toUpperCase()} PIN.</li>
                                                                 </ol>
                                                             )}
                                                         </div>
@@ -715,11 +718,11 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
                                                     type="button"
                                                     onClick={() => {
                                                         setStep(3);
-                                                        toast.success("[Dev Mode] Simulasi pembayaran sukses berhasil!");
+                                                        toast.success("[Dev Mode] Payment simulation successful!");
                                                     }}
                                                     className="text-[11px] text-indigo-600 font-semibold underline hover:text-indigo-700 cursor-pointer"
                                                 >
-                                                    [Dev Mode] Simulasi Verifikasi Pembayaran Sukses Direct
+                                                    [Dev Mode] Direct Payment Success Verification Simulation
                                                 </button>
                                             </div>
                                         </>
@@ -732,7 +735,7 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
                                         className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition py-2 cursor-pointer"
                                     >
                                         <ArrowLeft className="w-4 h-4" />
-                                        <span>{cancelling ? "Membatalkan..." : "Pilih Metode Pembayaran Lain"}</span>
+                                        <span>{cancelling ? "Cancelling..." : "Choose Another Payment Method"}</span>
                                     </button>
 
                                 </CardContent>
@@ -755,9 +758,9 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
                                     </motion.div>
 
                                     <div className="space-y-2">
-                                        <h2 className="text-2xl font-black text-slate-900 tracking-tight">Pembayaran Berhasil!</h2>
+                                        <h2 className="text-2xl font-black text-slate-900 tracking-tight">Payment Successful!</h2>
                                         <p className="text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
-                                            Transaksi Anda telah terverifikasi oleh Xendit. Hak akses produk digital telah otomatis ditambahkan ke perpustakaan akun Anda.
+                                            Your transaction has been verified by Xendit. Digital product access rights have been automatically added to your account library.
                                         </p>
                                     </div>
 
@@ -768,14 +771,14 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
                                             className="w-full h-12 flex items-center justify-center gap-2 text-sm font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20 transition-all"
                                         >
                                             <ShieldCheck className="w-5 h-5" />
-                                            <span>Buka Perpustakaan Digital Saya</span>
+                                            <span>Open My Digital Library</span>
                                         </Link>
 
                                         <Link
                                             href="/orders"
                                             className="w-full h-11 flex items-center justify-center text-xs font-bold rounded-xl border border-slate-200 hover:bg-slate-50 transition-all text-slate-700"
                                         >
-                                            Lihat Riwayat Pesanan
+                                            View Order History
                                         </Link>
                                     </div>
                                 </CardContent>
@@ -788,7 +791,7 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
                     <div className="w-full lg:w-96 shrink-0 sticky top-24">
                         <Card className="border-slate-200/80 bg-white rounded-2xl shadow-md shadow-slate-200/40 overflow-hidden">
                             <CardHeader className="border-b border-slate-100">
-                                <CardTitle className="text-base font-bold text-slate-900">Ringkasan Pesanan</CardTitle>
+                                <CardTitle className="text-base font-bold text-slate-900">Order Summary</CardTitle>
                             </CardHeader>
                             <CardContent className="p-5 space-y-5">
 
@@ -835,19 +838,19 @@ const CheckoutPage = ({ order }: CheckoutPageProps) => {
                                 {/* Subtotal Rincian */}
                                 <div className="space-y-2 text-xs font-medium text-slate-500">
                                     <div className="flex justify-between items-center">
-                                        <span>Total Produk</span>
+                                        <span>Total Items</span>
                                         <span className="font-bold text-slate-900">{order.items.length} Item</span>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <span>Biaya Transaksi (Xendit)</span>
-                                        <span className="text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 uppercase tracking-wide text-[10px]">Gratis</span>
+                                        <span>Transaction Fee (Xendit)</span>
+                                        <span className="text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 uppercase tracking-wide text-[10px]">Free</span>
                                     </div>
                                 </div>
 
                                 <Separator className="bg-slate-100" />
 
                                 <div className="flex justify-between items-end">
-                                    <span className="text-xs font-bold text-slate-700">Total Tagihan</span>
+                                    <span className="text-xs font-bold text-slate-700">Total Bill</span>
                                     <span className="text-xl font-black text-slate-900 leading-none">
                                         Rp {order.totalAmount.toLocaleString('id-ID')}
                                     </span>

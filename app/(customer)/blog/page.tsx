@@ -3,8 +3,26 @@ import { Metadata } from "next";
 import { getBlogCategories, getBlogPosts } from "@/lib/blog";
 
 export const metadata: Metadata = {
-    title: "Blog & Tutorials",
-    description: "Insights, Tutorials & Updates from CodeGraph",
+    title: "Blog & Tutorials", // Otomatis jadi "Blog & Tutorials | Codegraph" via template layout
+    description: "Insights, tutorials, and updates on digital assets, Canva design tips, and Excel productivity tools from Codegraph.",
+    keywords: [
+        "Codegraph blog",
+        "Canva tutorials",
+        "Excel tips",
+        "digital asset guide",
+        "design templates tutorial"
+    ],
+    openGraph: {
+        title: "Blog & Tutorials | Codegraph",
+        description: "Discover insights, tutorials, and productivity guides on digital assets, Canva, and Excel.",
+        url: "/blog",
+        type: "website",
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "Blog & Tutorials | Codegraph",
+        description: "Discover insights, tutorials, and productivity guides from Codegraph.",
+    },
 };
 
 export const revalidate = 3600;

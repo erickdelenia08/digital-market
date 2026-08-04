@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x", "rhel-openssl-3.0.x", "debian-openssl-1.1.x"]
 }
 
 datasource db {
@@ -122,6 +123,8 @@ model Category {
   description String?   @db.Text
   icon        String?
   products    Product[]
+
+  @@map("category")
 }
 
 model Product {
@@ -161,6 +164,8 @@ model Product {
 
   // @@index([slug])
   @@index([categoryId, deletedAt, name])
+  @@index([isPublished, deletedAt])
+  @@map("product")
 }
 
 model ProductMedia {
@@ -170,6 +175,8 @@ model ProductMedia {
   url       String
   type      MediaType
   sortOrder Int       @default(0)
+
+  @@map("productmedia")
 }
 
 enum MediaType {
@@ -193,6 +200,7 @@ model Review {
 
   @@unique([userId, productId])
   @@index([productId])
+  @@map("review")
 }
 
 // 4. SECURE DIGITAL ASSETS
@@ -220,6 +228,8 @@ model DigitalAsset {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("digitalasset")
 }
 
 enum AssetType {
@@ -260,6 +270,8 @@ model Order {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("order")
 }
 
 model OrderItem {
@@ -274,6 +286,8 @@ model OrderItem {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("orderitem")
 }
 
 model Payment {
@@ -300,6 +314,8 @@ model Payment {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("payment")
 }
 
 // ==========================================
@@ -325,6 +341,7 @@ model DownloadLog {
   orderId      String?
 
   @@index([userId, productId])
+  @@map("downloadlog")
 }
 
 // 1. DIBUTUHKAN UNTUK LIBRARY (Hak Akses / Kepemilikan User)
@@ -341,6 +358,7 @@ model UserLibrary {
   //Memastikan 1 produk cuma bisa dimiliki 1 kali oleh user tersebut
   @@unique([userId, productId])
   @@index([userId])
+  @@map("userlibrary")
 }
 
 // 7. BLOG SYSTEM
@@ -386,6 +404,7 @@ model Post {
   @@index([authorId])
   @@index([categoryId])
   @@index([relatedProductId])
+  @@map("post")
 }
 
 // Model khusus untuk Tag Artikel Blog
@@ -398,6 +417,8 @@ model PostTag {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("posttag")
 }
 
 // Model Kategori Khusus Blog
@@ -407,6 +428,8 @@ model PostCategory {
   slug      String   @unique
   posts     Post[]
   createdAt DateTime @default(now())
+
+  @@map("postcategory")
 }
 
 model Cart {
@@ -416,6 +439,8 @@ model Cart {
   items     CartItem[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+
+  @@map("cart")
 }
 
 model CartItem {
@@ -429,4 +454,5 @@ model CartItem {
   updatedAt DateTime @updatedAt
 
   @@unique([cartId, productId]) // Mencegah duplikasi produk dan varian yang sama dalam satu keranjang
+  @@map("cartitem")
 }

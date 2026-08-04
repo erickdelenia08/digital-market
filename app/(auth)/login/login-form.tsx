@@ -65,10 +65,10 @@ export function LoginForm() {
 
       useCartStore.getState().clearCart();
 
-      toast.success("Selamat datang kembali di CodeGraph!")
+      toast.success("Welcome back to CodeGraph!")
       window.location.assign(callbackUrl);
     } catch {
-      toast.error("Terjadi kesalahan. Silakan coba lagi.")
+      toast.error("An error occurred. Please try again.")
       setIsLoading(false)
     }
   }
@@ -104,12 +104,12 @@ export function LoginForm() {
           {/* Header Kartu */}
           <div className="mb-6 text-center space-y-1">
             <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-              {showTwoFactor ? "Verifikasi Dua Langkah" : "Masuk ke Akun"}
+              {showTwoFactor ? "Two-Factor Verification" : "Sign In to Your Account"}
             </h1>
             <p className="text-sm text-slate-500">
               {showTwoFactor
-                ? "Masukkan kode dari aplikasi autentikator kamu"
-                : "Akses aset digital dan dashboard kamu"}
+                ? "Enter the code from your authenticator app"
+                : "Access your digital assets and dashboard"}
             </p>
           </div>
 
@@ -156,7 +156,7 @@ export function LoginForm() {
                   className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-indigo-600 font-semibold transition-colors pt-1"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
-                  <span>Kembali ke form kredensial</span>
+                  <span>Back to credentials form</span>
                 </button>
               </div>
             )}
@@ -171,7 +171,7 @@ export function LoginForm() {
                     className={`text-xs font-bold tracking-wide uppercase ${form.formState.errors.email ? "text-rose-600" : "text-slate-700"
                       }`}
                   >
-                    Alamat Email
+                    Email Address
                   </Label>
                   <Input
                     id="email"
@@ -202,13 +202,13 @@ export function LoginForm() {
                       className={`text-xs font-bold tracking-wide uppercase ${form.formState.errors.password ? "text-rose-600" : "text-slate-700"
                         }`}
                     >
-                      Kata Sandi
+                      Password
                     </Label>
                     <Link
                       href="/forgot-password"
                       className="text-xs font-bold text-indigo-600 hover:text-indigo-500 hover:underline"
                     >
-                      Lupa password?
+                      Forgot password?
                     </Link>
                   </div>
 
@@ -255,10 +255,10 @@ export function LoginForm() {
               {showTwoFactor ? (
                 <span className="flex items-center gap-2">
                   <KeyRound className="w-4 h-4" />
-                  <span>Konfirmasi Kode</span>
+                  <span>Confirm Code</span>
                 </span>
               ) : (
-                "Masuk Sekarang"
+                "Sign In Now"
               )}
             </Button>
           </form>
@@ -266,12 +266,12 @@ export function LoginForm() {
           {/* Divider */}
           <div className="mt-6 border-t border-slate-100 pt-6 text-center">
             <p className="text-sm text-slate-600">
-              Belum punya akun?{" "}
+              Don&apos;t have an account?{" "}
               <Link
                 href="/register"
                 className="font-bold text-indigo-600 hover:text-indigo-500 hover:underline"
               >
-                Daftar Sekarang
+                Register Now
               </Link>
             </p>
           </div>
@@ -279,13 +279,13 @@ export function LoginForm() {
 
         {/* --- FOOTER ATURAN / TERMS --- */}
         <p className="mt-6 text-center text-[11px] text-slate-400 leading-relaxed px-4">
-          Dengan melanjutkan, Anda menyetujui{" "}
+          By continuing, you agree to{" "}
           <Link href="/terms" className="underline underline-offset-4 hover:text-slate-600">
-            Ketentuan Layanan
+            Terms of Service
           </Link>{" "}
-          dan{" "}
+          and{" "}
           <Link href="/privacy" className="underline underline-offset-4 hover:text-slate-600">
-            Kebijakan Privasi
+            Privacy Policy
           </Link>{" "}
           CodeGraph.
         </p>

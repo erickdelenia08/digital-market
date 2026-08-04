@@ -92,7 +92,7 @@ export default async function OrdersPage() {
               className="inline-flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 shadow-sm transition-all"
             >
               <Download className="w-4 h-4 text-indigo-600" />
-              <span>Buka My Library</span>
+              <span>Access My Library</span>
             </Link>
           </div>
 
@@ -146,13 +146,13 @@ export default async function OrdersPage() {
                                 </Link>
                               </h3>
                               <p className="text-xs text-slate-500 font-medium mt-1">
-                                Metode Bayar: <span className="text-slate-700 font-semibold">{paymentMethod}</span>
+                                Payment Method: <span className="text-slate-700 font-semibold">{paymentMethod}</span>
                               </p>
                             </div>
                           </div>
 
                           <div className="text-left sm:text-right shrink-0">
-                            <span className="text-xs text-slate-400 block font-medium">Harga</span>
+                            <span className="text-xs text-slate-400 block font-medium">Price</span>
                             <span className="font-extrabold text-slate-900 text-sm sm:text-base">
                               {formatRupiah(Number(item.price))}
                             </span>
@@ -166,7 +166,7 @@ export default async function OrdersPage() {
 
                       {/* Total Info */}
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Pembayaran:</span>
+                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Payment:</span>
                         <span className="text-lg font-black text-slate-900">
                           {formatRupiah(order.totalAmount)}
                         </span>
@@ -180,7 +180,7 @@ export default async function OrdersPage() {
                               href="/library"
                               className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition-all shadow-md hover:-translate-y-0.5"
                             >
-                              <span>Akses Aset</span>
+                              <span>Access Assets</span>
                               <ArrowRight className="w-3.5 h-3.5" />
                             </Link>
                           </>
@@ -192,7 +192,7 @@ export default async function OrdersPage() {
                               href={`/checkout/${order.id}`}
                               className="inline-flex items-center gap-1.5 px-5 py-2 bg-slate-900 hover:bg-indigo-600 text-white text-xs font-bold rounded-xl transition-all shadow-md hover:-translate-y-0.5"
                             >
-                              <span>Bayar Sekarang</span>
+                              <span>Pay Now</span>
                               <ExternalLink className="w-3.5 h-3.5" />
                             </Link>
                           </>
@@ -203,7 +203,7 @@ export default async function OrdersPage() {
                             href="/products"
                             className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl border border-slate-200 transition-colors"
                           >
-                            <span>Beli Ulang</span>
+                            <span>Buy Again</span>
                           </Link>
                         )}
                       </div>
@@ -219,16 +219,16 @@ export default async function OrdersPage() {
               <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto text-slate-400 border border-slate-200">
                 <ShoppingBag className="w-8 h-8" />
               </div>
-              <h2 className="text-xl font-bold text-slate-900">Belum Ada Transaksi</h2>
+              <h2 className="text-xl font-bold text-slate-900">No Orders Yet</h2>
               <p className="text-slate-500 text-xs leading-relaxed">
-                Kamu belum melakukan pembelian aset digital apapun. Jelajahi katalog produk kami untuk memulai.
+                You haven&apos;t made any digital asset purchases yet. Explore our product catalog to get started.
               </p>
               <div className="pt-2">
                 <Link
                   href="/products"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition-all shadow-md"
                 >
-                  <span>Eksplor Products</span>
+                  <span>Explore Products</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>

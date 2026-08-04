@@ -48,7 +48,7 @@ export function RegisterForm() {
         return
       }
 
-      toast.success("Akun berhasil dibuat! Mengarahkan ke dashboard...")
+      toast.success("Account created successfully! Redirecting to dashboard...")
 
       // Auto login setelah registrasi
       await signIn("credentials", {
@@ -57,7 +57,7 @@ export function RegisterForm() {
         callbackUrl: "/dashboard",
       })
     } catch {
-      toast.error("Terjadi kesalahan. Silakan coba lagi.")
+      toast.error("An error occurred. Please try again.")
       setIsLoading(false)
     }
   }
@@ -93,10 +93,10 @@ export function RegisterForm() {
           {/* Header Kartu */}
           <div className="mb-6 text-center space-y-1">
             <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-              Buat Akun Baru
+              Create New Account
             </h1>
             <p className="text-sm text-slate-500">
-              Isi data di bawah untuk mulai mengakses platform
+              Fill in the data below to access the platform
             </p>
           </div>
 
@@ -109,7 +109,7 @@ export function RegisterForm() {
                 className={`text-xs font-bold tracking-wide uppercase ${form.formState.errors.name ? "text-rose-600" : "text-slate-700"
                   }`}
               >
-                Nama Lengkap
+                Full Name
               </Label>
               <Input
                 id="name"
@@ -139,11 +139,11 @@ export function RegisterForm() {
                 className={`text-xs font-bold tracking-wide uppercase ${form.formState.errors.email ? "text-rose-600" : "text-slate-700"
                   }`}
               >
-                Alamat Email
+                Email Address
               </Label>
               <Input
                 id="email"
-                placeholder="nama@email.com"
+                placeholder="[EMAIL_ADDRESS]"
                 type="email"
                 autoCapitalize="none"
                 autoComplete="email"
@@ -169,7 +169,7 @@ export function RegisterForm() {
                 className={`text-xs font-bold tracking-wide uppercase ${form.formState.errors.password ? "text-rose-600" : "text-slate-700"
                   }`}
               >
-                Kata Sandi
+                Password
               </Label>
 
               <div className="relative">
@@ -210,7 +210,7 @@ export function RegisterForm() {
                 className={`text-xs font-bold tracking-wide uppercase ${form.formState.errors.confirmPassword ? "text-rose-600" : "text-slate-700"
                   }`}
               >
-                Konfirmasi Kata Sandi
+                Confirm Password
               </Label>
 
               <div className="relative">
@@ -255,7 +255,7 @@ export function RegisterForm() {
               ) : (
                 <span className="flex items-center gap-2">
                   <UserPlus className="w-4 h-4" />
-                  <span>Daftar Sekarang</span>
+                  <span>Sign Up Now</span>
                 </span>
               )}
             </Button>
@@ -264,12 +264,12 @@ export function RegisterForm() {
           {/* Divider */}
           <div className="mt-6 border-t border-slate-100 pt-6 text-center">
             <p className="text-sm text-slate-600">
-              Sudah memiliki akun?{" "}
+              Already have an account?{" "}
               <Link
                 href="/login"
                 className="font-bold text-indigo-600 hover:text-indigo-500 hover:underline"
               >
-                Masuk
+                Sign In
               </Link>
             </p>
           </div>
@@ -277,13 +277,13 @@ export function RegisterForm() {
 
         {/* --- FOOTER ATURAN / TERMS --- */}
         <p className="mt-6 text-center text-[11px] text-slate-400 leading-relaxed px-4">
-          Dengan mendaftar, Anda menyetujui{" "}
+          By registering, you agree to{" "}
           <Link href="/terms" className="underline underline-offset-4 hover:text-slate-600">
-            Ketentuan Layanan
+            Terms of Service
           </Link>{" "}
-          dan{" "}
+          and{" "}
           <Link href="/privacy" className="underline underline-offset-4 hover:text-slate-600">
-            Kebijakan Privasi
+            Privacy Policy
           </Link>{" "}
           CodeGraph.
         </p>

@@ -77,7 +77,7 @@ export default async function BlogPostDetailPage({ params }: Props) {
                             className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-indigo-600 bg-white border border-slate-200 px-3.5 py-2 rounded-xl transition-colors shadow-sm"
                         >
                             <ArrowLeft className="w-4 h-4" />
-                            <span>Kembali ke Blog</span>
+                            <span>Back to Blog</span>
                         </Link>
 
                         {post.category && (
@@ -122,7 +122,7 @@ export default async function BlogPostDetailPage({ params }: Props) {
 
                                 <div className="flex items-center gap-1.5 bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm">
                                     <Eye className="w-3.5 h-3.5 text-slate-500" />
-                                    <span>{(post.viewsCount + 1).toLocaleString('id-ID')} x dibaca</span>
+                                    <span>{(post.viewsCount + 1).toLocaleString('id-ID')} x Read</span>
                                 </div>
 
                                 <button
@@ -161,18 +161,18 @@ export default async function BlogPostDetailPage({ params }: Props) {
                             <div className="space-y-2 text-center sm:text-left">
                                 <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-indigo-300 uppercase tracking-wider bg-indigo-500/20 border border-indigo-500/30 px-3 py-1 rounded-lg">
                                     <ShoppingBag className="w-3.5 h-3.5 text-cyan-400" />
-                                    <span>REKOMENDASI PRODUK</span>
+                                    <span>RECOMMENDED PRODUCTS</span>
                                 </span>
                                 <h3 className="text-xl font-bold text-white">{post.relatedProduct.name}</h3>
                                 <p className="text-xs text-slate-400">
-                                    Tertarik dengan topik di artikel ini? Cek produk digital pendukungnya.
+                                    Interested in the topics in this article? Check out the supporting digital products.
                                 </p>
                             </div>
                             <Link
                                 href={`/products/${post.relatedProduct.slug}`}
                                 className="shrink-0 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-bold text-xs transition-all shadow-md active:scale-95 hover:-translate-y-0.5"
                             >
-                                Lihat Produk
+                                View Product
                             </Link>
                         </div>
                     )}
@@ -188,7 +188,7 @@ export default async function BlogPostDetailPage({ params }: Props) {
                                 <UserCheck className="w-4 h-4 text-indigo-600" />
                             </div>
                             <p className="text-slate-500 text-xs leading-relaxed">
-                                Kreator aktif CodeGraph. Fokus membangun aset digital dan komponen siap pakai untuk mempercepat workflow para developer.
+                                Active creator at CodeGraph. Focused on building digital assets and ready-to-use components to speed up the workflow of developers.
                             </p>
                         </div>
                     </div>
